@@ -1,6 +1,9 @@
 
-# Introduction and Goals {#section-introduction-and-goals}
+# Einleitung und Ziele {#section-introduction-and-goals}
+Get me drunk efficiently stellt einen Service zur Verfügung, welcher mittels Zutatenliste Vorschläge für Cocktails bietet, um einen gewünschten Promille-Wert zu erreichen.
 
+## Aufgabenstellung
+Im Rahmen der Vorlesung „Moderne Softwarearchitekuren“ wurde die Aufgabe gestellt, ein Projekt mit DDD Vorgehensweise zu entwickeln und dokumentieren.
 
 # Requirements Overview
 
@@ -22,7 +25,7 @@
 # Architecture Constraints
 
 
-# System Scope and Context
+# Kontextabgrenzung
 
 # Business Context
 
