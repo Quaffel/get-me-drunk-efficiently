@@ -9,10 +9,15 @@
 
 # Stakeholders
 
-
-| Role/Name   | Contact                   | Expectations              
---------------|---------------------------|----------------------------
-| a           | -                         | c
+| Role/Name            | Contact                   | Expectations              
+-----------------------|---------------------------|----------------------------
+| Ralf Klemmer         | -                         | Domain Drivern Development
+| Lena Fischer         | -                         | c
+| Johannes Pardoviki   | -                         | c
+| Niklas Radomski      | -                         | c
+| Jonas Wilms          | -                         | c
+| Nico Haefele         | -                         | c
+| Nicola Horst         | -                         | c
 
 # Architecture Constraints
 
