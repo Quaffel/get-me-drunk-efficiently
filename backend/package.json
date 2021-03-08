@@ -12,7 +12,7 @@
   "scripts": {
     "start": "npm run build && npm run development",
     "build": "tsc index.ts --outDir ./dist/",
-    "development": "node ./dist/index.js"
+    "development": "node ./dist/backend/index.js"
   },
   "author": "",
   "license": "ISC"
