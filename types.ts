@@ -1,25 +1,25 @@
-interface IIngredient {
+export interface IIngredient {
     name: string;
 }
 
-interface IDrink {
+export interface IDrink {
     name: string;
     description: string;
     instructions: string[];
     ingredients: IIngredient[];
 }
 
-interface IDrinkAmount {
+export interface IDrinkAmount {
     drink: IDrink;
     amount: number;
 }
 
-interface IRequest {
+export interface IRequest {
     ingredients: IIngredient[];
     promille: number;
     weight: number;
 }
 
-interface IResponse {
+export interface IResponse {
     drinks: IDrinkAmount[];
 }
