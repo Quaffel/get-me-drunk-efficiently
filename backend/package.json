@@ -1,0 +1,19 @@
+{
+  "name": "get-me-drunk-backend",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "dependencies": {
+    "express": "^4.17.1"
+  },
+  "devDependencies": {
+    "typescript": "^4.2.3"
+  },
+  "scripts": {
+    "start": "npm run build && npm run development",
+    "build": "tsc index.ts --outDir ./dist/",
+    "development": "node ./dist/index.js"
+  },
+  "author": "",
+  "license": "ISC"
+}
