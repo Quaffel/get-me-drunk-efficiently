@@ -40,13 +40,17 @@ WHERE {
     
     # Retrieves the ingredient's Open Food Facts category and ingredient identifiers, if available.
     OPTIONAL { ?ingredient wdt:P1821 ?offCategory. }
-    OPTIONAL { ?ingredient wdt:P5930 ?offIngredient. }
+    OPTIONAL { ?ingredient wdt:P5930 ?offRawIngredient. }
+
+    # Discards ingredient identifiers if category identifier is given since ingredients with 
+    # mulitple ingredient identifiers are way more likely than ingredients with multiple category identifiers.
+    BIND(IF(BOUND(?offCategory), "", ?offRawIngredient) AS ?offIngredient).
 
     # Removes all Open Food Facts identifiers that include a colon (':').
     # Colons are only part of regionalized identifiers.  As the application queries the 
     # world-wide database (world.openfoodfacts.org), however, only the universal identifiers are required.
-    FILTER (!CONTAINS(?offCategory , ":"))
-    FILTER (!CONTAINS(?offIngredient , ":"))
+    FILTER (!CONTAINS(IF(BOUND(?offCategory), ?offCategory, ""), ":"))
+    FILTER (!CONTAINS(IF(BOUND(?offIngredient), ?offIngredient, ""), ":"))
   }
 
   # Retrieves a cocktail's ingredients based on the P4330 ("contains") property.
@@ -68,13 +72,17 @@ WHERE {
     
     # Retrieves the ingredient's Open Food Facts category and ingredient identifiers, if available.
     OPTIONAL { ?ingredient wdt:P1821 ?offCategory. }
-    OPTIONAL { ?ingredient wdt:P5930 ?offIngredient. }
+    OPTIONAL { ?ingredient wdt:P5930 ?offRawIngredient. }
+
+    # Discards ingredient identifiers if category identifier is given since ingredients with 
+    # mulitple ingredient identifiers are way more likely than ingredients with multiple category identifiers.
+    BIND(IF(BOUND(?offCategory), "", ?offRawIngredient) AS ?offIngredient).
 
     # Removes all Open Food Facts identifiers that include a colon (':').
     # Colons are only part of regionalized identifiers.  As the application queries the 
     # world-wide database (world.openfoodfacts.org), however, only the universal identifiers are required.
-    FILTER (!CONTAINS(?offCategory , ":"))
-    FILTER (!CONTAINS(?offIngredient , ":"))
+    FILTER (!CONTAINS(IF(BOUND(?offCategory), ?offCategory, ""), ":"))
+    FILTER (!CONTAINS(IF(BOUND(?offIngredient), ?offIngredient, ""), ":"))
   }
   
   # Retrieves a cocktail's ingredients based on the P527 ("has part") property.
@@ -96,13 +104,17 @@ WHERE {
     
     # Retrieves the ingredient's Open Food Facts category and ingredient identifiers, if available.
     OPTIONAL { ?ingredient wdt:P1821 ?offCategory. }
-    OPTIONAL { ?ingredient wdt:P5930 ?offIngredient. }
+    OPTIONAL { ?ingredient wdt:P5930 ?offRawIngredient. }
+
+    # Discards ingredient identifiers if category identifier is given since ingredients with 
+    # mulitple ingredient identifiers are way more likely than ingredients with multiple category identifiers.
+    BIND(IF(BOUND(?offCategory), "", ?offRawIngredient) AS ?offIngredient).
 
     # Removes all Open Food Facts identifiers that include a colon (':').
     # Colons are only part of regionalized identifiers.  As the application queries the 
     # world-wide database (world.openfoodfacts.org), however, only the universal identifiers are required.
-    FILTER (!CONTAINS(?offCategory , ":"))
-    FILTER (!CONTAINS(?offIngredient , ":"))
+    FILTER (!CONTAINS(IF(BOUND(?offCategory), ?offCategory, ""), ":"))
+    FILTER (!CONTAINS(IF(BOUND(?offIngredient), ?offIngredient, ""), ":"))
   }
 }
 ORDER BY ASC(?cocktailLabel)
