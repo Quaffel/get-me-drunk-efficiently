@@ -1,10 +1,9 @@
-import * as Express from "express";
-import * as bodyParser from "body-parser";
+import express, { Application, Request, Response} from "express";
 import { IResponse, IRequest } from "../types";
 
-const app = Express();
+const app: Application = express();
 
-app.post("/api/get-me-drunk", bodyParser.json(), (req, res) => {
+app.post("/api/get-me-drunk", express.json(), (req: Request, res: Response) => {
     const request = req.body as IRequest;
 
     // TODO: Loads of logic
