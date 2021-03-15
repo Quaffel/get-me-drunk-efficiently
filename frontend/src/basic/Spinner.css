@@ -1,16 +1,14 @@
 .basic-spinner {
-    width: 90%;
-    height: 90vw;
+    width: 400px;
+    height: 400px;
     background-color: var(--secondary);
     color: var(--primary);
-    border-radius: 90vw;
-    max-width: 400px;
-    max-height: 400px;
+    border-radius: 400px;
     margin: 100px auto;
     text-align: center;
     
     font-family: 'Montserrat Subrayada', sans-serif;
-    line-height: 45vw;
+    line-height: 400px;
     font-size: 30px;
 
     -webkit-animation: spin 4s linear infinite;
