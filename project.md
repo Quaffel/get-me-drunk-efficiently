@@ -54,11 +54,11 @@ Im Rahmen der Vorlesung „Moderne Softwarearchitekuren“ wurde die Aufgabe ges
 | Architekturdokumentation | Terminologie und Gliederung nach dem deutschen arc42-Template|
 | Kodierrichtlinien für TS/JS |TS/JS Coding conventiones von Nico H.|
 | Sprache (Deutsch vs. Englisch) | Der gesamte Quellcode wird in Englisch verfasst, die Dokumentation auf Deutsch, weil die Hauptnutzergruppe deutschsprachig. (Cocktails usw. deutsch)|
-|
 
 # Kontextabgrenzung
 
 ## Fachlicher Kontext
+[Fachlicher Kontext][Fachlicher_Kontext]
 
 
 
@@ -96,3 +96,6 @@ Important Interfaces
 
 [React_JS]: https://reactjs.org/docs/getting-started.html
 [Typescript_JS]: https://www.typescriptlang.org/
+
+
+[Fachlicher_Kontext]: doc_ressources\fachlicher_kontext.png "fachlicher kontext png"
