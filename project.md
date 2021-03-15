@@ -58,7 +58,7 @@ Im Rahmen der Vorlesung „Moderne Softwarearchitekuren“ wurde die Aufgabe ges
 # Kontextabgrenzung
 
 ## Fachlicher Kontext
-[Fachlicher Kontext][Fachlicher_Kontext]
+![Fachlicher Kontext][Fachlicher_Kontext]
 
 
 
