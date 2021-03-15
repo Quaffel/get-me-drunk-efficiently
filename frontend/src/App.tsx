@@ -1,10 +1,11 @@
 import React from 'react';
 import './App.css';
 import { DrinkList } from './drinks/DrinkList';
-import { IDrinkAmount, IDrink } from "../../types";
+import { IDrinkAmount, IDrink, IIngredient } from "../../types";
 import { Banner } from './basic/Banner';
 import { Spinner } from './basic/Spinner';
 import SearchForm from './searchform/searchform';
+import *  as API from "./api";
 
 const drinkAmounts = [
   { 
@@ -30,13 +31,13 @@ const drinkAmounts = [
 function App() {
   const [state, setState] = React.useState<{ pending?: true, loading?: true, result?: IDrinkAmount[], error?: string  }>({ pending: true });
 
-  async function startRecomendation(query: { ingredients: string[], weight: number, }) {
+  async function startRecomendation(query: { ingredients: IIngredient[], weight: number, promille: number }) {
     setState({ loading: true });
 
     // TODO: Call backend here
-    await new Promise(res => setTimeout(res, 1_000));
+    const result = await API.getMeDrunk(query);
 
-    setState({ result: drinkAmounts });
+    setState({ result: result.drinks });
   }
 
 
@@ -56,18 +57,18 @@ function App() {
     )
   }
 
-  if(state.pending) {
+  if(state.pending || !state.result?.length) {
     return (
       <Container>
-        <SearchForm submit={(weight, ingredients) => startRecomendation({ ingredients, weight })} />
+        {!!state.result && !state.result.length && <Banner.Warning title="No result found" text="Adapt your query" />}
+        <SearchForm submit={(weight, ingredients) => startRecomendation({ ingredients: [], weight, promille: 1 })} />
       </Container>
     )
   }
 
-
   return (
     <Container>
-      <DrinkList drinkAmounts={drinkAmounts} />
+      <DrinkList drinkAmounts={state.result} />
     </Container>
   );
 }
@@ -78,5 +79,6 @@ function Container({ children }: React.PropsWithChildren<{}>) {
     {children}
   </div>
 }
+
 
 export default App;
