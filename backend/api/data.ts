@@ -160,7 +160,39 @@ export function fetchCocktails(): Promise<IDrink[]> {
 function parseResult(sparqlResult: string): IDrink[] {
     const data = JSON.parse(sparqlResult);
 
-    // TODO: Implement
+    // Type results
+    type sparqlValue<T> = { 
+        type: 'uri' | 'literal';
+        value: T;
+    }
+    const cocktailTable = data.results.bindings as {
+        cocktail: sparqlValue<string>;
+        cocktailLabel: sparqlValue<string>;
+        ingredientLabel?: sparqlValue<string>;
+        ingredientAmount?: sparqlValue<Number>;
+        ingredientUnitLabel?: sparqlValue<string>;
+    }[];
 
-    return [];
+    // Aggregate drink information
+    const drinks: { [id: string]: IDrink } = {};
+    cocktailTable.forEach(el => {
+        // Drink does not exists
+        if(!drinks[el.cocktail.value]) {
+            drinks[el.cocktail.value] = {
+                name: el.cocktailLabel.value,
+                ingredients: []
+            }
+        }
+
+        // Add ingredient if not empty
+        if(el.ingredientLabel) drinks[el.cocktail.value].ingredients.push({
+            name: el.ingredientLabel.value
+        });
+    });
+    let result = Object.values(drinks);
+
+    // Remove drinks without ingredients
+    result = result.filter(drink => drink.ingredients.length > 0);
+
+    return result;
 }

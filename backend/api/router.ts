@@ -8,7 +8,6 @@ router.post("/get-me-drunk", express.json(), (req: Request, res: Response) => {
     const request = req.body as IRequest;
 
     // TODO: Loads of logic
-    fetchCocktails();
 
     const result: IResponse = { drinks: [] };
     return res.json(result);

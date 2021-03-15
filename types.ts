@@ -4,8 +4,8 @@ export interface IIngredient {
 
 export interface IDrink {
     name: string;
-    description: string;
-    instructions: string[];
+    description?: string;
+    instructions?: string[];
     ingredients: IIngredient[];
 }
 
