@@ -13,7 +13,7 @@ function SearchForm({submit}:{submit:(weight:number, ingredients:string[]) => vo
             <div className="searchform-input-container"><input type="number" id="weightInput" value={weight} onChange={events => setWeight(+events.target.value)} className="searchform-input"></input><span>kg</span></div>
             <br />
             <DrunkScale />
-            <button onClick={() => submit(weight, ingredients)}>Submit</button>
+            <button className="searchform-submit" onClick={() => submit(weight, ingredients)}>Drunk!</button>
         </div>
     );
 }
