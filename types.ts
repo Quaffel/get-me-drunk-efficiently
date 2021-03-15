@@ -27,3 +27,9 @@ export interface IResponse {
 export interface IResponseIngredients {
     ingredients: IIngredient[];
 }
+
+export function objIsRequest(obj: any): obj is IRequest {
+    return obj && obj.ingredients && typeof obj.ingredients === 'object'
+        && obj.promille && typeof obj.promille === 'number'
+        && obj.weight && typeof obj.weight === 'number'
+}

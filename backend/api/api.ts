@@ -1,13 +1,13 @@
 import express, { Router, Request, Response } from 'express';
-import { IRequest, IResponse, IResponseIngredients } from '../../types';
+import { IRequest, IResponse, IResponseIngredients, objIsRequest } from '../../types';
 import { getAllIngredients, getOptimalDrinkAmounts } from './services';
 
 const router: Router = Router();
 
 router.post('/get-me-drunk', express.json(), (req: Request, res: Response) => {
-    const request = req.body as IRequest;
+    if(!objIsRequest(req.body)) return res.status(400).end();
 
-    const optimalDrinks = getOptimalDrinkAmounts(request.ingredients, request.promille, request.weight);
+    const optimalDrinks = getOptimalDrinkAmounts(req.body.ingredients, req.body.promille, req.body.weight);
     
     const result: IResponse = { drinks: optimalDrinks };
     return res.json(result);
