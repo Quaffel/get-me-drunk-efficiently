@@ -57,8 +57,9 @@ WHERE {
       ?ingredientSuperclass wdt:P2665 ?ingredientSuperclassAlcohol. }
     BIND(COALESCE(?ingredientAlcohol, ?ingredientClassAlcohol, ?ingredientSuperclassAlcohol) AS ?alcohol).
     
-    
     # Retrieves the ingredient's Open Food Facts category, if available.
+    # If the ingredient itself doesn't have such aproperty, but the class the ingredient
+    # is an instnace or a subclass of has, the property of the respective class is used instead.
     OPTIONAL { ?ingredient wdt:P1821 ?ingredientOffCategory. }
     OPTIONAL { 
       ?ingredient wdt:P31 ?ingredientClass.
@@ -94,15 +95,7 @@ WHERE {
     FILTER (lang(?ingredientUnitLabel) = "en").
     
     
-    # If the ingredient is a subclass and/or an instance of another class, those classes are
-    # queried as well if the entity itself doesn't hold sufficient information.
-    # Querying those classes upfront might seem more efficient at first glance, but leads
-    # to severe performance issues in practice (due to a data dependency that is hard to optimize).
-    # That's why '?ingredientClass' and '?ingredientSuperclass' are queried several times.
-
     # Queries the ingredient's alcohol concentration by volume (percentage points).
-    # If the ingredient itself doesn't have such a property, but the class the ingredient
-    # is an instance or a subclass of has, the property of the respective class is used instead.
     OPTIONAL { ?ingredient wdt:P2665 ?ingredientAlcohol. }
     OPTIONAL { 
       ?ingredient wdt:P31 ?ingredientClass.
@@ -125,9 +118,6 @@ WHERE {
     }
     BIND(COALESCE(?ingredientOffCategory, ?ingredientClassOffCategory, ?ingredientSuperclassOffCategory) AS ?offCategory).
 
-    # Removes all Open Food Facts category identifiers that include a colon (':').
-    # Colons are only part of regionalized identifiers.  As the application queries the 
-    # world-wide database (world.openfoodfacts.org), however, only the universal identifiers are required.
     FILTER (!CONTAINS(IF(BOUND(?offCategory), ?offCategory, ""), ":"))
   }
 
@@ -149,15 +139,7 @@ WHERE {
     FILTER (lang(?ingredientUnitLabel) = "en").
     
     
-    # If the ingredient is a subclass and/or an instance of another class, those classes are
-    # queried as well if the entity itself doesn't hold sufficient information.
-    # Querying those classes upfront might seem more efficient at first glance, but leads
-    # to severe performance issues in practice (due to a data dependency that is hard to optimize).
-    # That's why '?ingredientClass' and '?ingredientSuperclass' are queried several times.
-
     # Queries the ingredient's alcohol concentration by volume (percentage points).
-    # If the ingredient itself doesn't have such a property, but the class the ingredient
-    # is an instance or a subclass of has, the property of the respective class is used instead.
     OPTIONAL { ?ingredient wdt:P2665 ?ingredientAlcohol. }
     OPTIONAL { 
       ?ingredient wdt:P31 ?ingredientClass.
@@ -180,9 +162,6 @@ WHERE {
     }
     BIND(COALESCE(?ingredientOffCategory, ?ingredientClassOffCategory, ?ingredientSuperclassOffCategory) AS ?offCategory).
 
-    # Removes all Open Food Facts category identifiers that include a colon (':').
-    # Colons are only part of regionalized identifiers.  As the application queries the 
-    # world-wide database (world.openfoodfacts.org), however, only the universal identifiers are required.
     FILTER (!CONTAINS(IF(BOUND(?offCategory), ?offCategory, ""), ":"))
   }
 }
