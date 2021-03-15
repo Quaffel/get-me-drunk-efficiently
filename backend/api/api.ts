@@ -4,7 +4,7 @@ import { getOptimalDrinkAmounts } from './services';
 
 const router: Router = Router();
 
-router.post("/get-me-drunk", express.json(), (req: Request, res: Response) => {
+router.post('/get-me-drunk', express.json(), (req: Request, res: Response) => {
     const request = req.body as IRequest;
 
     const result: IResponse = { drinks: [] };

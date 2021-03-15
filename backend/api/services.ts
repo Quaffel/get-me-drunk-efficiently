@@ -1,12 +1,12 @@
 import { IDrinkAmount, IIngredient } from "../../types";
-import { fetchCocktails } from "./data";
+import { getDrinks } from "./data";
 
-export async function getOptimalDrinkAmounts(
+export function getOptimalDrinkAmounts(
     availableIngredients: IIngredient[],
     promille: Number,
     weight: Number
-): Promise<IDrinkAmount[]> {
-    const allDrinks = await fetchCocktails();
+): IDrinkAmount[] {
+    const allDrinks = getDrinks();
     const availableDrinks = allDrinks.filter(drink => 
         areIngredientsAvailable(drink.ingredients, availableIngredients));
 

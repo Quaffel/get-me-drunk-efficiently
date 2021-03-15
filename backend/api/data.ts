@@ -6,7 +6,15 @@ const endpointHost = 'query.wikidata.org';
 const endpointPath = 'sparql';
 const userAgent = 'GetMeDrunkEfficiently/0.0 (https://github.com/Quaffel/get-me-drunk-efficiently)';
 
-export function fetchCocktails(): Promise<IDrink[]> {
+let cachedDrinks: IDrink[] = [];
+
+/** Get cached Drinks */
+export function getDrinks(): IDrink[] {
+    return cachedDrinks;
+}
+
+/** Fetch drinks from wikidata and cache response */
+export async function fetchDrinks(): Promise<IDrink[]> {
     const query = `
     prefix wdt: <http://www.wikidata.org/prop/direct/>
     prefix wd: <http://www.wikidata.org/entity/>
@@ -152,7 +160,7 @@ export function fetchCocktails(): Promise<IDrink[]> {
         // Write request body
         request.write(postData);
         request.end();
-    });
+    }).then(drinks => cachedDrinks = drinks);
 }
 
 // Parses SPARQL cocktail results to drink array
