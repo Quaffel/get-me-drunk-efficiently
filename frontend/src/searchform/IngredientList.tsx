@@ -19,9 +19,9 @@ async function getRecommendation(search: string, exclude: IIngredient[], cancell
         if(exclude.includes(ingredient)) continue;
         if(!ingredient.name.startsWith(search)) continue;
 
-        // TODO: Weight better results
-        best = ingredient;
-        break;
+        if(!best || best.name.length > ingredient.name.length)
+            best = ingredient;
+        
     }
 
     return best;
@@ -38,7 +38,7 @@ function useRecommendation(search: string, exclude: IIngredient[]): IIngredient 
             .catch(() => {});
 
         return () => { cancellationToken.cancelled = true }; 
-    }, [search]);
+    }, [search, exclude]);
 
     return recommendation;
 }
