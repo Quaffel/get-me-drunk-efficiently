@@ -11,5 +11,5 @@ fetchDrinks().then(() => {
     const ingredients = getIngredients();
     console.log(`Successfully cached ${drinks.length} drinks with ${ingredients.length} unique ingredients!`);
 
-    app.listen(80, () => console.log("Started the backend on port 80"));
+    app.listen(4000, () => console.log("Started the backend on port 4000"));
 });
