@@ -1,6 +1,5 @@
-import express, { Application, Request, Response} from "express";
-import { IResponse, IRequest } from "../types";
-import { router as apiRouter } from './api/router';
+import express, { Application} from "express";
+import { router as apiRouter } from './api/api';
 
 const app: Application = express();
 

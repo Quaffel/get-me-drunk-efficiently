@@ -1,7 +1,6 @@
 import { IDrink } from '../../types';
 import { IncomingMessage } from 'http';
 import https from 'https';
-import { urlencoded } from 'express';
 
 const endpointHost = 'query.wikidata.org';
 const endpointPath = 'sparql';

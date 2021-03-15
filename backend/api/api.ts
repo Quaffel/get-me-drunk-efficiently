@@ -1,6 +1,5 @@
 import express, { Router, Request, Response } from 'express';
 import { IRequest, IResponse } from '../../types';
-import { fetchCocktails } from './data';
 
 const router: Router = Router();
 
