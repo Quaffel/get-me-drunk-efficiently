@@ -1,6 +1,11 @@
 import { IDrinkAmount, IIngredient } from "../../types";
 import { getDrinks } from "./data";
 
+export function getAllIngredients(): IIngredient[] {
+
+    return [];
+}
+
 export function getOptimalDrinkAmounts(
     availableIngredients: IIngredient[],
     promille: Number,

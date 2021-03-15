@@ -1,4 +1,4 @@
-import { IDrink } from '../../types';
+import { IDrink, IIngredient } from '../../types';
 import { IncomingMessage } from 'http';
 import https from 'https';
 
@@ -7,11 +7,18 @@ const endpointPath = 'sparql';
 const userAgent = 'GetMeDrunkEfficiently/0.0 (https://github.com/Quaffel/get-me-drunk-efficiently)';
 
 let cachedDrinks: IDrink[] = [];
+let cachedIngredients: IIngredient[] = [];
 
 /** Get cached Drinks */
 export function getDrinks(): IDrink[] {
     return cachedDrinks;
 }
+
+/** Get cached Ingredients */
+export function getIngredients(): IIngredient[] {
+    return cachedIngredients;
+}
+
 
 /** Fetch drinks from wikidata and cache response */
 export async function fetchDrinks(): Promise<IDrink[]> {
@@ -160,7 +167,19 @@ export async function fetchDrinks(): Promise<IDrink[]> {
         // Write request body
         request.write(postData);
         request.end();
-    }).then(drinks => cachedDrinks = drinks);
+    }).then(drinks => {
+        //Cache drinks
+        cachedDrinks = drinks;
+
+        //Cache ingredients;
+        cachedIngredients = [];
+        drinks.map(drink => drink.ingredients).flat().forEach(ingredient => {
+            if(!cachedIngredients.map(el => el.name).includes(ingredient.name))
+                cachedIngredients.push(ingredient);
+        });
+
+        return drinks;
+    });
 }
 
 // Parses SPARQL cocktail results to drink array

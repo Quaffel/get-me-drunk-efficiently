@@ -23,3 +23,7 @@ export interface IRequest {
 export interface IResponse {
     drinks: IDrinkAmount[];
 }
+
+export interface IResponseIngredients {
+    ingredients: IIngredient[];
+}
