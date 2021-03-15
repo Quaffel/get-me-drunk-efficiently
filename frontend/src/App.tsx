@@ -34,10 +34,12 @@ function App() {
   async function startRecomendation(query: { ingredients: IIngredient[], weight: number, promille: number }) {
     setState({ loading: true });
 
-    // TODO: Call backend here
-    const result = await API.getMeDrunk(query);
-
-    setState({ result: result.drinks });
+    try {
+      const result = await API.getMeDrunk(query);
+      setState({ result: result.drinks });
+    } catch(error) {
+      setState({ error: error.message });
+    }
   }
 
 
