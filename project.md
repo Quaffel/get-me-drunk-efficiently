@@ -59,7 +59,7 @@ Im Rahmen der Vorlesung „Moderne Softwarearchitekuren“ wurde die Aufgabe ges
 
 ## Fachlicher Kontext
 
-![Fachlicher Kontext](doc_ressources\fachlicher_kontext.png)
+![Fachlicher Kontext][Fachlicher_Kontext]
 
 ### User
 Der User bekommt Cocktail-Vorschläge vom System anhand seiner Anagaben wie:
@@ -113,4 +113,4 @@ Important Interfaces
 [Typescript_JS]: https://www.typescriptlang.org/
 
 
-[Fachlicher_Kontext]: doc_ressources\fachlicher_kontext.png "fachlicher kontext png"
+[Fachlicher_Kontext]: doc_ressources\images\fachlicher_kontext.jpg "fachlicher kontext png"
