@@ -1,9 +1,8 @@
 import { IDrinkAmount, IIngredient } from "../../types";
-import { getDrinks } from "./data";
+import { getDrinks, getIngredients } from "./data";
 
 export function getAllIngredients(): IIngredient[] {
-
-    return [];
+    return getIngredients();
 }
 
 export function getOptimalDrinkAmounts(
