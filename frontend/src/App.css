@@ -1,38 +1,27 @@
-.App {
+@import url('https://fonts.googleapis.com/css2?family=Montserrat+Subrayada&display=swap');
+
+:root {
+  --primary: white;
+  --secondary: #009ee7b0;
+  --secondary-highlight: #83c8e7;
+  --warning: #dd5c5c;
+  --title: #ffdf2aab;
+}
+
+body {
+  background-color: var(--primary);
+}
+
+.app {
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.app-title {
+  color: var(--primary);
+  background-color: var(--title);
+  font-family: 'Montserrat Subrayada';
   text-align: center;
-}
-
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
-}
-
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
-}
-
-.App-link {
-  color: #61dafb;
-}
-
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+  padding: 10px 20px;
+  font-size: 25px;
 }

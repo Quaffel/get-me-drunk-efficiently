@@ -1,0 +1,13 @@
+.basic-banner__warning {
+    background-color: var(--warning);
+    color: var(--primary);
+    padding: 20px;
+}
+
+.basic-banner-title {
+    font-family: 'Montserrat Subrayada';
+}
+
+.basic-banner-text {
+    
+}

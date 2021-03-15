@@ -1,16 +1,15 @@
-import * as Express from "express";
-import * as bodyParser from "body-parser";
-import { IResponse, IRequest } from "../types";
+import express, { Application} from "express";
+import { router as apiRouter } from './api/api';
+import { fetchDrinks, getDrinks, getIngredients } from "./api/data";
 
-const app = Express();
+const app: Application = express();
 
-app.post("/api/get-me-drunk", bodyParser.json(), (req, res) => {
-    const request = req.body as IRequest;
+app.use('/api', apiRouter);
 
-    // TODO: Loads of logic
+fetchDrinks().then(() => {
+    const drinks = getDrinks();
+    const ingredients = getIngredients();
+    console.log(`Successfully cached ${drinks.length} drinks with ${ingredients.length} unique ingredients!`);
 
-    const result: IResponse = { drinks: [] };
-    return res.json(result);
+    app.listen(80, () => console.log("Started the backend on port 80"));
 });
-
-app.listen(80, () => console.log("Started the backend on port 80"));

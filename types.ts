@@ -4,8 +4,8 @@ export interface IIngredient {
 
 export interface IDrink {
     name: string;
-    description: string;
-    instructions: string[];
+    description?: string;
+    instructions?: string[];
     ingredients: IIngredient[];
 }
 
@@ -22,4 +22,14 @@ export interface IRequest {
 
 export interface IResponse {
     drinks: IDrinkAmount[];
+}
+
+export interface IResponseIngredients {
+    ingredients: IIngredient[];
+}
+
+export function objIsRequest(obj: any): obj is IRequest {
+    return obj && obj.ingredients && typeof obj.ingredients === 'object'
+        && obj.promille && typeof obj.promille === 'number'
+        && obj.weight && typeof obj.weight === 'number'
 }
