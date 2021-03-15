@@ -3,6 +3,8 @@
 :root {
   --primary: white;
   --secondary: #009ee7;
+  --secondary-highlight: #83c8e7;
+  --warning: #dd5c5c;
 }
 
 body {
