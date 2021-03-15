@@ -115,5 +115,5 @@ Important Interfaces
 [Typescript_JS]: https://www.typescriptlang.org/
 
 
-[Fachlicher_Kontext]: doc_ressources/images/fachlicher_kontext.jpg
-[Technischer_Kontext]: doc_ressources/images/technischer_kontext.jpg
+[Fachlicher_Kontext]: doc_ressources\images\fachlicher_kontext.png
+[Technischer_Kontext]: doc_ressources/images/technischer_kontext.png
