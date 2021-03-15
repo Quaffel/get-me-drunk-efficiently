@@ -2,16 +2,26 @@
 
 :root {
   --primary: white;
-  --secondary: #009ee7;
+  --secondary: #009ee7b0;
   --secondary-highlight: #83c8e7;
   --warning: #dd5c5c;
+  --title: #ffdf2aab;
 }
 
 body {
   background-color: var(--primary);
 }
 
-.App {
+.app {
   max-width: 1000px;
   margin: 0 auto;
+}
+
+.app-title {
+  color: var(--primary);
+  background-color: var(--title);
+  font-family: 'Montserrat Subrayada';
+  text-align: center;
+  padding: 10px 20px;
+  font-size: 25px;
 }
