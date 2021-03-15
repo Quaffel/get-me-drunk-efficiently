@@ -75,7 +75,9 @@ Wird hinzugezogen, falls im Cocktailrezept Angaben zum Alkohol felheln. In diese
 ### Wikimedia (API)
 Aus dem Wikimedia Datenbestand werden passend zu den Cocktails Bilder geladen welche dem User in der Anwendung angezeigt werden.
 
+## Technischer Kontext
 
+![Technischer Kontext][Technischer_Kontext]
 
 # Solution Strategy
 
@@ -113,4 +115,5 @@ Important Interfaces
 [Typescript_JS]: https://www.typescriptlang.org/
 
 
-[Fachlicher_Kontext]: doc_ressources\images\fachlicher_kontext.jpg "fachlicher kontext png"
+[Fachlicher_Kontext]: doc_ressources/images/fachlicher_kontext.jpg
+[Technischer_Kontext]: doc_ressources/images/technischer_kontext.jpg
