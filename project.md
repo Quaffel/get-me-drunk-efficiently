@@ -8,6 +8,14 @@ Im Rahmen der Vorlesung „Moderne Softwarearchitekuren“ wurde die Aufgabe ges
 # Requirements Overview
 
 # Quality Goals
+* Einfache Bedienbarkeit
+...* Der Nutzer soll ohne große umstände nach dem Starten der App siene Suche starten können. z.B. keine Freitexte (Listen mit allen Zutaten) damit schnell die richtige Benamung gefunden werden kann.
+
+* Schnelle Antwortzeiten
+...* Eine Anfrgae soll bei einen stabilen Internetverbindung nicht länger als 2h dauern.
+
+* Abwechslungsreicher Cocktail-Mix
+...* Der Nutzer soll für seine Anfrage für eine abwechslungsreiche Auswahl an Cocktails bekommen 
 
 
 # Stakeholders
