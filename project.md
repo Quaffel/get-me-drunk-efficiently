@@ -48,12 +48,17 @@ Im Rahmen der Vorlesung „Moderne Softwarearchitekuren“ wurde die Aufgabe ges
 | Zeitplan          | Beginnend am 08.03.2021 wurde sich darauf geeining, dass bis zum 22.03.2021 ein erster lauffähiger Prototyp fertig gestell werden sollte. Am 25.03.2021 soll das Projet in seiner finalen Version sein.|
 | Veröffentlichung als Open Source | Die Quelltexte der Lösung oder zumindest Teile werden als Open Source verfügbar gemacht.|
 
-## Architecture Constraints
+## Konventionen
+| Konventionen  | Erläuterung Hintergrund |
+----------------|-------------------------|
+| Architekturdokumentation | Terminologie und Gliederung nach dem deutschen arc42-Template|
+| Kodierrichtlinien für TS/JS |TS/JS Coding conventiones von Nico H.|
+| Sprache (Deutsch vs. Englisch) | Der gesamte Quellcode wird in Englisch verfasst, die Dokumentation auf Deutsch, weil die Hauptnutzergruppe deutschsprachig. (Cocktails usw. deutsch)|
+|
 
+# Kontextabgrenzung
 
-## Kontextabgrenzung
-
-## Business Context
+## Fachlicher Kontext
 
 
 
