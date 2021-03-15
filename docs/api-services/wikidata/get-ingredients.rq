@@ -49,26 +49,16 @@ WHERE {
     # If the ingredient itself doesn't have such a property, but the class the ingredient
     # is an instance or a subclass of has, the property of the respective class is used instead.
     OPTIONAL { ?ingredient wdt:P2665 ?ingredientAlcohol. }
-    OPTIONAL { 
-      ?ingredient wdt:P31 ?ingredientClass.
-      ?ingredientClass wdt:P2665 ?ingredientClassAlcohol. }
-    OPTIONAL { 
-      ?ingredient wdt:P279 ?ingredientSuperclass.
-      ?ingredientSuperclass wdt:P2665 ?ingredientSuperclassAlcohol. }
+    OPTIONAL { ?ingredient wdt:P31/wdt:P2665 ?ingredientClassAlcohol. }
+    OPTIONAL { ?ingredient wdt:P279/wdt:P2665 ?ingredientSuperclassAlcohol. }
     BIND(COALESCE(?ingredientAlcohol, ?ingredientClassAlcohol, ?ingredientSuperclassAlcohol) AS ?alcohol).
     
     # Retrieves the ingredient's Open Food Facts category, if available.
     # If the ingredient itself doesn't have such aproperty, but the class the ingredient
     # is an instnace or a subclass of has, the property of the respective class is used instead.
     OPTIONAL { ?ingredient wdt:P1821 ?ingredientOffCategory. }
-    OPTIONAL { 
-      ?ingredient wdt:P31 ?ingredientClass.
-      ?ingredientClass wdt:P1821 ?ingredientClassOffCategory. 
-    }
-    OPTIONAL { 
-      ?ingredient wdt:P279 ?ingredientSuperclass.
-      ?ingredientSuperclass wdt:P1821 ?ingredientSuperclassOffCategory. 
-    }
+    OPTIONAL { ?ingredient wdt:P31/wdt:P1821 ?ingredientClassOffCategory. }
+    OPTIONAL { ?ingredient wdt:P279/wdt:P1821 ?ingredientSuperclassOffCategory. }
     BIND(COALESCE(?ingredientOffCategory, ?ingredientClassOffCategory, ?ingredientSuperclassOffCategory) AS ?offCategory).
 
     # Removes all Open Food Facts category identifiers that include a colon (':').
@@ -94,28 +84,17 @@ WHERE {
     ?ingredientUnit rdfs:label ?ingredientUnitLabel.
     FILTER (lang(?ingredientUnitLabel) = "en").
     
-    
+
     # Queries the ingredient's alcohol concentration by volume (percentage points).
     OPTIONAL { ?ingredient wdt:P2665 ?ingredientAlcohol. }
-    OPTIONAL { 
-      ?ingredient wdt:P31 ?ingredientClass.
-      ?ingredientClass wdt:P2665 ?ingredientClassAlcohol. }
-    OPTIONAL { 
-      ?ingredient wdt:P279 ?ingredientSuperclass.
-      ?ingredientSuperclass wdt:P2665 ?ingredientSuperclassAlcohol. }
+    OPTIONAL { ?ingredient wdt:P31/wdt:P2665 ?ingredientClassAlcohol. }
+    OPTIONAL { ?ingredient wdt:P279/wdt:P2665 ?ingredientSuperclassAlcohol. }
     BIND(COALESCE(?ingredientAlcohol, ?ingredientClassAlcohol, ?ingredientSuperclassAlcohol) AS ?alcohol).
-    
     
     # Retrieves the ingredient's Open Food Facts category, if available.
     OPTIONAL { ?ingredient wdt:P1821 ?ingredientOffCategory. }
-    OPTIONAL { 
-      ?ingredient wdt:P31 ?ingredientClass.
-      ?ingredientClass wdt:P1821 ?ingredientClassOffCategory. 
-    }
-    OPTIONAL { 
-      ?ingredient wdt:P279 ?ingredientSuperclass.
-      ?ingredientSuperclass wdt:P1821 ?ingredientSuperclassOffCategory. 
-    }
+    OPTIONAL { ?ingredient wdt:P31/wdt:P1821 ?ingredientClassOffCategory. }
+    OPTIONAL { ?ingredient wdt:P279/wdt:P1821 ?ingredientSuperclassOffCategory. }
     BIND(COALESCE(?ingredientOffCategory, ?ingredientClassOffCategory, ?ingredientSuperclassOffCategory) AS ?offCategory).
 
     FILTER (!CONTAINS(IF(BOUND(?offCategory), ?offCategory, ""), ":"))
@@ -138,28 +117,17 @@ WHERE {
     ?ingredientUnit rdfs:label ?ingredientUnitLabel.
     FILTER (lang(?ingredientUnitLabel) = "en").
     
-    
+
     # Queries the ingredient's alcohol concentration by volume (percentage points).
     OPTIONAL { ?ingredient wdt:P2665 ?ingredientAlcohol. }
-    OPTIONAL { 
-      ?ingredient wdt:P31 ?ingredientClass.
-      ?ingredientClass wdt:P2665 ?ingredientClassAlcohol. }
-    OPTIONAL { 
-      ?ingredient wdt:P279 ?ingredientSuperclass.
-      ?ingredientSuperclass wdt:P2665 ?ingredientSuperclassAlcohol. }
+    OPTIONAL { ?ingredient wdt:P31/wdt:P2665 ?ingredientClassAlcohol. }
+    OPTIONAL { ?ingredient wdt:P279/wdt:P2665 ?ingredientSuperclassAlcohol. }
     BIND(COALESCE(?ingredientAlcohol, ?ingredientClassAlcohol, ?ingredientSuperclassAlcohol) AS ?alcohol).
-    
     
     # Retrieves the ingredient's Open Food Facts category, if available.
     OPTIONAL { ?ingredient wdt:P1821 ?ingredientOffCategory. }
-    OPTIONAL { 
-      ?ingredient wdt:P31 ?ingredientClass.
-      ?ingredientClass wdt:P1821 ?ingredientClassOffCategory. 
-    }
-    OPTIONAL { 
-      ?ingredient wdt:P279 ?ingredientSuperclass.
-      ?ingredientSuperclass wdt:P1821 ?ingredientSuperclassOffCategory. 
-    }
+    OPTIONAL { ?ingredient wdt:P31/wdt:P1821 ?ingredientClassOffCategory. }
+    OPTIONAL { ?ingredient wdt:P279/wdt:P1821 ?ingredientSuperclassOffCategory. }
     BIND(COALESCE(?ingredientOffCategory, ?ingredientClassOffCategory, ?ingredientSuperclassOffCategory) AS ?offCategory).
 
     FILTER (!CONTAINS(IF(BOUND(?offCategory), ?offCategory, ""), ":"))
