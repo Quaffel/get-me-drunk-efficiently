@@ -10,15 +10,17 @@ Im Rahmen der Vorlesung „Moderne Softwarearchitekuren“ wurde die Aufgabe ges
 # Quality Goals
 * Einfache Bedienbarkeit
 
-..* Der Nutzer soll ohne große umstände nach dem Starten der App siene Suche starten können. z.B. keine Freitexte (Listen mit allen Zutaten) damit schnell die richtige Benamung gefunden werden kann.
+    * Der Nutzer soll ohne große umstände nach dem Starten der App siene Suche starten können. z.B. keine Freitexte (Listen mit allen Zutaten) damit schnell die richtige Benamung gefunden werden kann.
 
 * Schnelle Antwortzeiten
 
-..* Eine Anfrgae soll bei einen stabilen Internetverbindung nicht länger als 2h dauern.
+    * Eine Anfrgae soll bei einen stabilen Internetverbindung nicht länger als 2h dauern.
 
 * Abwechslungsreicher Cocktail-Mix
 
-..* Der Nutzer soll für seine Anfrage für eine abwechslungsreiche Auswahl an Cocktails bekommen 
+    * Der Nutzer soll für seine Anfrage für eine abwechslungsreiche Auswahl an Cocktails bekommen 
+
+* Plattformunabhängige Benutzung
 
 
 # Stakeholders
@@ -79,7 +81,20 @@ Aus dem Wikimedia Datenbestand werden passend zu den Cocktails Bilder geladen we
 
 ![Technischer Kontext][Technischer_Kontext]
 
-# Solution Strategy
+### Client
+Die Anbindung von GMDE erfolgt über eine graphische Oberflächer welche vom Entwicklerteam bereitgestellt wird. Da das Backend eine REST-Scnittstelle bereitstellt, kann jedoch auch ein separates Frontend entwickelt werden und nur der Backendservice verwendet werden. Die REST-Schnittstelle kann über das HTTP Protokoll angesprochen werde genaue Informationen ....
+
+### WikiData
+Die Informationen zu den Cocktails werden per HTTP-Protokoll und der WikiData Querry-Sprache SPARQL von der WikiData Datenbank angefordert.
+
+### Open Food Facts
+Die Weiterführenden Informationen zum Alkoholgehalt werden über die FoodID aus der WikiData Datenbank über das HTTP-Protokoll und SPARSQL aus der OpenFoodFacts API angefragt.
+
+### WikiMedia
+Die Bilder zu den jeweiligen Cocktails werden über das HTTP-Protokoll und SPARSQL aus dem WikiMedia Datenbestand angefragt.
+
+# Lösungsstrategie
+
 
 # Building Block View
 
@@ -115,5 +130,5 @@ Important Interfaces
 [Typescript_JS]: https://www.typescriptlang.org/
 
 
-[Fachlicher_Kontext]: doc_ressources\images\fachlicher_kontext.png
+[Fachlicher_Kontext]: doc_ressources/images/fachlicher_kontext.png
 [Technischer_Kontext]: doc_ressources/images/technischer_kontext.png
