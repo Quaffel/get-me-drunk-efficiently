@@ -58,7 +58,21 @@ Im Rahmen der Vorlesung „Moderne Softwarearchitekuren“ wurde die Aufgabe ges
 # Kontextabgrenzung
 
 ## Fachlicher Kontext
-![Fachlicher Kontext][Fachlicher_Kontext]
+![Fachlicher_Kontext][Fachlicher_Kontext]
+
+### User
+Der User bekommt Cocktail-Vorschläge vom System anhand seiner Anagaben wie:
+* Zutaten
+* Zu erreichende Promille
+
+### Wiki Data (API)
+Initiale Abfrage der Cocktailliste mit Zutaten und Beschreibung beim starten des Systems. Hier liegen alle Daten zu den Cocktails, welche dem User vorgeschlagen werden.
+
+### Open Food Facts (API)
+Wird hinzugezogen, falls im Cocktailrezept Angaben zum Alkohol felheln. In diesem Fall wird in der Open Food Facts Datenbank nach dem Alkoholgehalt gesucht.
+
+### Wikimedia (API)
+Aus dem Wikimedia Datenbestand werden passend zu den Cocktails Bilder geladen welche dem User in der Anwendung angezeigt werden.
 
 
 
