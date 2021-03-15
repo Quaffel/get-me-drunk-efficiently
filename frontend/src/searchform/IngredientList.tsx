@@ -5,13 +5,54 @@ import { IIngredient } from "../../../types";
 
 import * as API from "../api";
 
-const allIngredients = API.getIngredients();
+const loadAllIngredients = API.getIngredients();
+
+async function getRecommendation(search: string, exclude: IIngredient[], cancellationToken: { cancelled: boolean }): Promise<IIngredient | null> {
+    const ingredients = (await loadAllIngredients).ingredients;
+
+    if(cancellationToken.cancelled)
+        throw new Error("cancelled");
+
+    let best = null;
+    
+    for(const ingredient of ingredients) {
+        if(exclude.includes(ingredient)) continue;
+        if(!ingredient.name.startsWith(search)) continue;
+
+        // TODO: Weight better results
+        best = ingredient;
+        break;
+    }
+
+    return best;
+}
+
+function useRecommendation(search: string, exclude: IIngredient[]): IIngredient | null {
+    const [recommendation, setRecommendation] = React.useState<IIngredient | null>(null);
+
+    React.useEffect(() => {
+        const cancellationToken = { cancelled: false };
+
+        getRecommendation(search, exclude, cancellationToken)
+            .then(setRecommendation)
+            .catch(() => {});
+
+        return () => { cancellationToken.cancelled = true }; 
+    }, [search]);
+
+    return recommendation;
+}
 
 export function IngredientList({ ingredients, setIngredients }: { ingredients: IIngredient[], setIngredients(ingredients: IIngredient[]): void, }) {
     const [currentIngredient, setCurrentIngredient] = React.useState("");
+    const recommendation = useRecommendation(currentIngredient, /* exclude: */ ingredients);
+
     const ingredientSubmit = (event: React.KeyboardEvent<HTMLInputElement>) => {
         if (event.code !== "Enter") return;
-        setIngredients([...ingredients, { name: currentIngredient }]);
+        if(!recommendation) return;
+        if(ingredients.includes(recommendation)) return;
+
+        setIngredients([...ingredients, recommendation]);
         setCurrentIngredient("");
         event.preventDefault();
     }
@@ -23,7 +64,9 @@ export function IngredientList({ ingredients, setIngredients }: { ingredients: I
     return (
         <>
             <label htmlFor="ingredientInput" className="searchform-label">What's inside your fridge?</label>
-            <input type="text" id="ingredientInput" value={currentIngredient} onChange={event => setCurrentIngredient(event.target.value)} onKeyDown={ingredientSubmit} className="searchform-input"></input>
+            <input type="text" id="ingredientInput" autoComplete="off" value={currentIngredient} onChange={event => setCurrentIngredient(event.target.value)} onKeyDown={ingredientSubmit} className="searchform-input"></input>
+            {currentIngredient.length > 2 && !!recommendation && <>{recommendation.name} ?</>}
+            {currentIngredient.length > 2 && !recommendation && <>No such ingredient</>}
             {ingredients.map(ingredient =>
                 <div key={ingredient.name} className="ingredient-container">
                     <div className="ingredient-label">{ingredient.name}</div>
