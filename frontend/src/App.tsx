@@ -63,7 +63,7 @@ function App() {
     return (
       <Container>
         {!!state.result && !state.result.length && <Banner.Warning title="No result found" text="Adapt your query" />}
-        <SearchForm submit={(weight, ingredients) => startRecomendation({ ingredients: [], weight, promille: 1 })} />
+        <SearchForm submit={startRecomendation} />
       </Container>
     )
   }
