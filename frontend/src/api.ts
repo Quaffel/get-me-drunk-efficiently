@@ -1,4 +1,4 @@
-import { IRequest, IResponse } from "../../types";
+import { IRequest, IResponse, IResponseIngredients } from "../../types";
 
 export const getMeDrunk = (request: IRequest): Promise<IResponse> =>
     fetch("/api/get-me-drunk", {
@@ -8,3 +8,6 @@ export const getMeDrunk = (request: IRequest): Promise<IResponse> =>
         },
         body: JSON.stringify(request)
     }).then(it => it.json());
+
+    export const getIngredients = (): Promise<IResponseIngredients> =>
+        fetch("/api/ingredients").then(it => it.json());
