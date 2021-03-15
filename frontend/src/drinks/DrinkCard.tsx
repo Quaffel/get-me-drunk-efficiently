@@ -11,8 +11,8 @@ export function DrinkCard({ drink }: { drink: IDrink }) {
                 <>{ingredient.name} <br/></>    
             )}
         </Card.Content>
-        {!!drink.instructions.length && <Card.Content title="Instructions">
-            {drink.instructions.map((instruction, index) => 
+        {!!drink.instructions?.length && <Card.Content title="Instructions">
+            {drink.instructions?.map((instruction, index) => 
                 <>{index + 1}. {instruction}<br/></>
             )}
         </Card.Content>}
