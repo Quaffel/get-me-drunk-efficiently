@@ -37,7 +37,5 @@ export function useTipsySelector({
         }}
     />;
 
-    console.log(value);
-
     return [el, value];
 }
