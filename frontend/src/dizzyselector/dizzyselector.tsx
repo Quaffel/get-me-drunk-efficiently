@@ -24,8 +24,6 @@ export function DizzySelector({
     const startPointCartesian = startPointPolar.convertToCartesian();
     const endPointCartesian = endPointPolar.convertToCartesian();
 
-    const startEndAngularSpan = Math.abs(endAngleDegrees.degrees - startAngleDegrees.degrees);
-
 
     const [knobPosition, setKnobPosition] = React.useState<CartesianPoint>(startPointCartesian);
 
