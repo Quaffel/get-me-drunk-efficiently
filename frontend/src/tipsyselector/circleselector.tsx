@@ -2,7 +2,7 @@ import React, { SVGProps } from "react";
 import { Angle, CartesianPoint, Vector, PolarPoint, DegreeAngle } from "./math2d";
 import { OpenCircleSvg } from "./opencircle";
 
-export function DizzySelector({
+export function CircleSelector({
     value,
     setValue,
     circleOptions,
