@@ -16,24 +16,16 @@ export function DizzySelector({
 
     // Always use degree angles to make amount of necessary conversions more predictable
     const startPointPolar = new PolarPoint(circleOptions.center, circleOptions.radius, startAngleDegrees);
-    const endPointPolar = new PolarPoint(circleOptions.center, circleOptions.radius, endAngleDegrees)
+    const endPointPolar = new PolarPoint(circleOptions.center, circleOptions.radius, endAngleDegrees);
+
+    const endPointPolarNormalized = endPointPolar.normalize(startAngleDegrees);
+    const endAngleNormalizedDegrees = endPointPolarNormalized.angle.convertToDegrees();
 
     const startPointCartesian = startPointPolar.convertToCartesian();
     const endPointCartesian = endPointPolar.convertToCartesian();
 
     const startEndAngularSpan = Math.abs(endAngleDegrees.degrees - startAngleDegrees.degrees);
 
-    // TODO: Test extreme case: 350 -> 10
-
-    const largeArcFlag = (() => {
-        const largerThanSemicircle = startEndAngularSpan > 180;
-
-        // If the start angle is larger than the end angle, the part of the circle that is enclosed by 
-        // the start and the end angle is invers.
-        return startAngleDegrees.degrees > endAngleDegrees.degrees ? !largerThanSemicircle : largerThanSemicircle;
-    })() ? "1" : "0";
-
-    console.log(`Arc flag: ${largeArcFlag}`);
 
     const [knobPosition, setKnobPosition] = React.useState<CartesianPoint>(startPointCartesian);
 
@@ -77,22 +69,23 @@ export function DizzySelector({
         /* Transform cartesian point into polar point */
         const pointOnCirclePolar = pointOnCircleCartesian.point.convertPointOnCircleToPolar(
             circleOptions.center, circleOptions.radius
-        );
+        ).normalize(startAngleDegrees);
 
         // Knob is between start and end point; thus on the invalid part of the circle
-        if (pointOnCirclePolar.angle.convertToDegrees().degrees < startAngleDegrees.degrees
-            && pointOnCirclePolar.angle.convertToDegrees().degrees > endAngleDegrees.degrees) {
+        if (pointOnCirclePolar.angle.convertToDegrees().degrees > endAngleNormalizedDegrees.degrees) {
             return;
         }
 
-        const openingAngle = pointOnCirclePolar.normalize(startAngleDegrees).angle.convertToDegrees().degrees;
-        const totalValueAngle = (360 - startAngleDegrees.degrees + endAngleDegrees.degrees);
+        const openingAngle = pointOnCirclePolar.angle.convertToDegrees().degrees;
+        const totalValueAngle = endAngleNormalizedDegrees.degrees;
         const percentage = openingAngle / totalValueAngle;
 
         console.log(percentage);
 
         setKnobPosition(pointOnCircleCartesian.point);
     }
+
+    const largeArcFlag = endPointPolarNormalized.angle.convertToDegrees().degrees > 180 ? "1" : "0";
 
     return <>
         <h1>How dizzy do you want to be?</h1>
