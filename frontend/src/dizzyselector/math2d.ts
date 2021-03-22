@@ -95,7 +95,7 @@ export class CartesianPoint {
     }
 }
 
-export type CartesianVector = CartesianPoint;
+export type Vector = CartesianPoint;
 
 export class PolarPoint {
 
