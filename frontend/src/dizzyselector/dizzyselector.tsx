@@ -1,58 +1,41 @@
 import React from "react";
+import { Angle, CartesianPoint, CartesianVector as Vector, DegreeAngle, PolarPoint } from "./math2d";
 
-function convertDegreesToRadians(degrees: number) {
-    return degrees / 180 * Math.PI;
-}
-
-function convertRadiantsToDegrees(radiants: number) {
-    return radiants / (2 * Math.PI) * 360;
-}
-
-export function DizzySelector(): React.ReactElement {
-    interface Vector {
-        x: number,
-        y: number
-    }
-
-    type CartesianPoint = Vector;
-
-    interface PolarPoint {
+export function DizzySelector({
+    circleOptions
+}: {
+    circleOptions: {
+        startAngle: Angle,
+        endAngle: Angle,
+        radius: number,
         center: CartesianPoint,
-        angle: number
     }
+}): React.ReactElement {
+    const startAngleDegrees = circleOptions.startAngle.convertToDegrees();
+    const endAngleDegrees = circleOptions.endAngle.convertToDegrees();
 
-    function convertPolarToCartesian(center: CartesianPoint, radius: number, angleInDegrees: number): Vector {
-        const angleInRadians = convertDegreesToRadians(angleInDegrees);
+    // Always use degree angles to make amount of necessary conversions more predictable
+    const startPointPolar = new PolarPoint(circleOptions.center, circleOptions.radius, startAngleDegrees);
+    const endPointPolar = new PolarPoint(circleOptions.center, circleOptions.radius, endAngleDegrees)
 
-        return {
-            x: center.x + Math.cos(angleInRadians) * radius,
-            y: center.y + Math.sin(angleInRadians) * radius
-        };
-    }
+    const startPointCartesian = startPointPolar.convertToCartesian();
+    const endPointCartesian = endPointPolar.convertToCartesian();
 
-    const startAngle = 200;
-    const endAngle = 90;
+    const startEndAngularSpan = Math.abs(endAngleDegrees.degrees - startAngleDegrees.degrees);
 
-    const radius = 100;
-    const center: Vector = {
-        x: 250,
-        y: 250
-    };
-
-    const startEndAngularSpan = Math.abs((endAngle % 360) - (startAngle % 360));
+    // TODO: Test extreme case: 350 -> 10
 
     const largeArcFlag = (() => {
         const largerThanSemicircle = startEndAngularSpan > 180;
 
         // If the start angle is larger than the end angle, the part of the circle that is enclosed by 
         // the start and the end angle is invers.
-        return startAngle > endAngle ? !largerThanSemicircle : largerThanSemicircle;
+        return startAngleDegrees.degrees > endAngleDegrees.degrees ? !largerThanSemicircle : largerThanSemicircle;
     })() ? "1" : "0";
 
-    const startPoint = convertPolarToCartesian(center, radius, startAngle);
-    const endPoint = convertPolarToCartesian(center, radius, endAngle);
+    console.log(`Arc flag: ${largeArcFlag}`);
 
-    const [knobPosition, setKnobPosition] = React.useState<CartesianPoint>(startPoint);
+    const [knobPosition, setKnobPosition] = React.useState<CartesianPoint>(startPointCartesian);
 
     function onMove(event: React.MouseEvent<HTMLDivElement>) {
         // Mouse movement only, so the input must not change the value
@@ -61,30 +44,28 @@ export function DizzySelector(): React.ReactElement {
         }
 
         /* Calculate point on circle that is closest to the cursor */
-        function calculateEuclideanDistance(vector: Vector): number {
-            return Math.sqrt(vector.x ** 2 + vector.y ** 2)
-        }
+        function calculateClosestPointOnCircle(point: CartesianPoint): { point: CartesianPoint, offset: number } {
+            const centerToPoint: Vector = new CartesianPoint(
+                point.x - circleOptions.center.x,
+                point.y - circleOptions.center.y
+            );
 
-        function calculateClosestPointOnCircle(point: Vector): Vector & { offset: number } {
-            const centerToPoint: Vector = {
-                x: point.x - center.x,
-                y: point.y - center.y
-            };
-
-            const centerToPointLength = calculateEuclideanDistance(centerToPoint);
+            const centerToPointLength = centerToPoint.calculateEuclideanDistance();
 
             return {
-                offset: Math.abs(radius - centerToPointLength),
-                x: centerToPoint.x / centerToPointLength * radius + center.x,
-                y: centerToPoint.y / centerToPointLength * radius + center.y
+                offset: Math.abs(circleOptions.radius - centerToPointLength),
+                point: new CartesianPoint(
+                    centerToPoint.x / centerToPointLength * circleOptions.radius + circleOptions.center.x,
+                    centerToPoint.y / centerToPointLength * circleOptions.radius + circleOptions.center.y
+                )
             };
         }
 
         const targetDimensionsInViewport: DOMRect = event.currentTarget.getBoundingClientRect();
-        const cursorPosition: Vector = {
-            x: event.clientX - targetDimensionsInViewport.left,
-            y: event.clientY - targetDimensionsInViewport.top
-        };
+        const cursorPosition: Vector = new CartesianPoint(
+            event.clientX - targetDimensionsInViewport.left,
+            event.clientY - targetDimensionsInViewport.top
+        );
 
         const pointOnCircleCartesian = calculateClosestPointOnCircle(cursorPosition);
 
@@ -94,56 +75,23 @@ export function DizzySelector(): React.ReactElement {
         }
 
         /* Transform cartesian point into polar point */
-        /**
-         * Converts the cartesian coordinates of a point located on the given circle into polar coordinates. 
-         */
-        function convertCartesianOnCircleIntoPolar(point: CartesianPoint): PolarPoint {
-            const centerToPoint: Vector = {
-                x: point.x - center.x,
-                y: point.y - center.y
-            };
+        const pointOnCirclePolar = pointOnCircleCartesian.point.convertPointOnCircleToPolar(
+            circleOptions.center, circleOptions.radius
+        );
 
-            // Determine in which quarter the point is located in and add the respective offset
-            let quarterPhiBase, quarterOffset;
-            if (centerToPoint.x >= 0) {
-                if (centerToPoint.y >= 0) {
-                    quarterPhiBase = Math.asin(centerToPoint.y / radius);
-                    quarterOffset = 0;
-                } else {
-                    quarterPhiBase = Math.asin(centerToPoint.x / radius);
-                    quarterOffset = 270;
-                }
-            } else {
-                if (centerToPoint.y >= 0) {
-                    quarterPhiBase = Math.asin(centerToPoint.x / radius);
-                    quarterOffset = 90;
-                } else {
-                    quarterPhiBase = Math.asin(centerToPoint.y / radius);
-                    quarterOffset = 180;
-                }
-            }
-
-            const quarterPhi = convertRadiantsToDegrees(Math.abs(quarterPhiBase));
-
-            return {
-                center,
-                angle: quarterPhi + quarterOffset
-            };
-        }
-
-        const pointOnCirclePolar = convertCartesianOnCircleIntoPolar(pointOnCircleCartesian);
-
-        if (pointOnCirclePolar.angle < startAngle && pointOnCirclePolar.angle > endAngle) {
+        // Knob is between start and end point; thus on the invalid part of the circle
+        if (pointOnCirclePolar.angle.convertToDegrees().degrees < startAngleDegrees.degrees
+            && pointOnCirclePolar.angle.convertToDegrees().degrees > endAngleDegrees.degrees) {
             return;
         }
 
-        const openingAngle = ((360 - startAngle) + pointOnCirclePolar.angle) % 360;
-        const totalValueAngle = (360 - startAngle + endAngle);
+        const openingAngle = pointOnCirclePolar.normalize(startAngleDegrees).angle.convertToDegrees().degrees;
+        const totalValueAngle = (360 - startAngleDegrees.degrees + endAngleDegrees.degrees);
         const percentage = openingAngle / totalValueAngle;
 
         console.log(percentage);
 
-        setKnobPosition(pointOnCircleCartesian);
+        setKnobPosition(pointOnCircleCartesian.point);
     }
 
     return <>
@@ -152,7 +100,7 @@ export function DizzySelector(): React.ReactElement {
             style={{ backgroundColor: "lightgrey", width: "500px", height: "500px" }}>
             <svg width="500" height="500">
                 <path fill="none" stroke="black" strokeWidth="10"
-                    d={`M ${startPoint.x} ${startPoint.y} A ${radius} ${radius} 0 ${largeArcFlag} 1 ${endPoint.x} ${endPoint.y}`} />
+                    d={`M ${startPointCartesian.x} ${startPointCartesian.y} A ${circleOptions.radius} ${circleOptions.radius} 0 ${largeArcFlag} 1 ${endPointCartesian.x} ${endPointCartesian.y}`} />
                 <circle cx={knobPosition.x} cy={knobPosition.y} r="10" fill="white" />
             </svg>
         </div>
