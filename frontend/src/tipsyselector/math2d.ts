@@ -1,4 +1,3 @@
-// Type definitions //
 export abstract class Angle {
     abstract convertToRadiants(): RadiantsAngle;
     abstract convertToDegrees(): DegreeAngle;
@@ -84,10 +83,6 @@ export class CartesianPoint {
             radius,
             new DegreeAngle(quarterPhi.degrees + quarterOffset)
         );
-    }
-
-    convertToPolar() {
-
     }
 
     calculateEuclideanDistance(): number {
