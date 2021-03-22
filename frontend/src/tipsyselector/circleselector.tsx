@@ -1,14 +1,16 @@
-import React, { SVGProps } from "react";
+import React from "react";
 import { Angle, CartesianPoint, Vector, PolarPoint, DegreeAngle } from "./math2d";
 import { OpenCircleSvg } from "./opencircle";
 
 export function CircleSelector({
     value,
+    displayValue,
     setValue,
     circleOptions,
     styleOptions
 }: {
     value: number,
+    displayValue: string,
     setValue: (value: number) => void,
     circleOptions: {
         startAngle: Angle,
@@ -21,10 +23,12 @@ export function CircleSelector({
         knobClass?: string,
         primaryCircleClass?: string,
         secondaryCircleClass?: string,
+        valueDisplayClass?: string,
 
-        primaryCircleProps?: SVGProps<SVGPathElement>,
-        secondaryCircleProps?: SVGProps<SVGPathElement>,
-        knobProps?: SVGProps<SVGCircleElement>
+        primaryCircleProps?: React.SVGProps<SVGPathElement>,
+        secondaryCircleProps?: React.SVGProps<SVGPathElement>,
+        knobProps?: React.SVGProps<SVGCircleElement>,
+        valueDisplayProps?: React.SVGProps<SVGTextElement>
     }
 }): React.ReactElement {
     if (value > 1 || value < 0) {
@@ -167,6 +171,10 @@ export function CircleSelector({
                 r={knobRadius} fill="white"
                 className={styleOptions?.knobClass}
                 {...styleOptions?.knobProps} />
+            <text x={center.x} y={center.y}
+                textAnchor="middle"
+                className={styleOptions?.valueDisplayClass}
+                {...styleOptions?.valueDisplayProps}>{displayValue}</text>
         </svg>
     </div>
 }
