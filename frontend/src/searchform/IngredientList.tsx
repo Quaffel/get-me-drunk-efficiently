@@ -7,6 +7,9 @@ import * as API from "../api";
 
 const loadAllIngredients = API.getIngredients();
 
+const normalize = (str: string) =>
+  str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+
 async function getRecommendation(search: string, exclude: IIngredient[], cancellationToken: { cancelled: boolean }): Promise<IIngredient | null> {
     const ingredients = (await loadAllIngredients).ingredients;
 
@@ -15,9 +18,11 @@ async function getRecommendation(search: string, exclude: IIngredient[], cancell
 
     let best = null;
     
+    search = normalize(search);
+    
     for(const ingredient of ingredients) {
         if(exclude.includes(ingredient)) continue;
-        if(!ingredient.name.startsWith(search)) continue;
+        if(!normalize(ingredient.name).startsWith(search)) continue;
 
         if(!best || best.name.length > ingredient.name.length)
             best = ingredient;
