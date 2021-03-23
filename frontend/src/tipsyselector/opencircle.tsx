@@ -3,11 +3,11 @@ import { Angle, CartesianPoint, PolarPoint } from "./math2d";
 
 export function OpenCircleSvg({
     pathProps,
-    circleOptions,
+    layoutOptions,
     styleOptions
 }: {
     pathProps?: Omit<React.SVGProps<SVGPathElement>, "d" | "fill">
-    circleOptions: {
+    layoutOptions: {
         startAngle: Angle,
         endAngle: Angle,
         radius: number,
@@ -23,12 +23,12 @@ export function OpenCircleSvg({
         endPointCartesian: CartesianPoint,
         largeArcFlag: string
     }>(() => {
-        const startAngleDegrees = circleOptions.startAngle.convertToDegrees();
-        const endAngleDegrees = circleOptions.endAngle.convertToDegrees();
+        const startAngleDegrees = layoutOptions.startAngle.convertToDegrees();
+        const endAngleDegrees = layoutOptions.endAngle.convertToDegrees();
 
         // Always use degree angles to make amount of necessary conversions more predictable
-        const startPointPolar = new PolarPoint(circleOptions.center, circleOptions.radius, startAngleDegrees);
-        const endPointPolar = new PolarPoint(circleOptions.center, circleOptions.radius, endAngleDegrees);
+        const startPointPolar = new PolarPoint(layoutOptions.center, layoutOptions.radius, startAngleDegrees);
+        const endPointPolar = new PolarPoint(layoutOptions.center, layoutOptions.radius, endAngleDegrees);
 
         const startPointCartesian = startPointPolar.convertToCartesian();
         const endPointCartesian = endPointPolar.convertToCartesian();
@@ -42,14 +42,14 @@ export function OpenCircleSvg({
             endPointCartesian,
             largeArcFlag
         };
-    }, [circleOptions]);
+    }, [layoutOptions]);
 
 
     return <path fill="none" stroke="black"
         strokeWidth={styleOptions?.strokeWidth ?? "10"}
         className={styleOptions?.className}
         d={`M ${startPointCartesian.x} ${startPointCartesian.y} ` +
-            `A ${circleOptions.radius} ${circleOptions.radius} ` +
+            `A ${layoutOptions.radius} ${layoutOptions.radius} ` +
             `0 ${largeArcFlag} 1 ` + // <rotation> <large-arc (necessary when lgt 180deg)> <clock-wise>
             `${endPointCartesian.x} ${endPointCartesian.y}`}
         {...pathProps} // Last so that parent elements can override the default settings (except d)

@@ -6,20 +6,20 @@ export function CircleSelector({
     value,
     displayValue,
     setValue,
-    circleOptions,
+    layoutOptions,
     styleOptions
 }: {
     value: number,
     displayValue: string,
     setValue: (value: number) => void,
-    circleOptions: {
+    layoutOptions: {
+        knobRadius?: number,
+
         startAngle: Angle,
         endAngle: Angle,
         radius: number
     },
     styleOptions?: {
-        knobRadius?: number,
-
         knobClass?: string,
         primaryCircleClass?: string,
         secondaryCircleClass?: string,
@@ -47,21 +47,21 @@ export function CircleSelector({
         knobPositionPolar: PolarPoint,
         knobPositionCartesian: CartesianPoint
     }>(() => {
-        const knobRadius = (styleOptions?.knobRadius) ?? 10;
-        const width = circleOptions.radius * 2 + knobRadius * 2;
+        const knobRadius = (layoutOptions?.knobRadius) ?? 10;
+        const width = layoutOptions.radius * 2 + knobRadius * 2;
 
         const center = new CartesianPoint(width / 2, width / 2);
 
-        const startAngleDegrees = circleOptions.startAngle.convertToDegrees();
-        const endAngleDegrees = circleOptions.endAngle.convertToDegrees();
+        const startAngleDegrees = layoutOptions.startAngle.convertToDegrees();
+        const endAngleDegrees = layoutOptions.endAngle.convertToDegrees();
 
-        const endAngleNormalizedDegrees = new PolarPoint(center, circleOptions.radius, endAngleDegrees)
+        const endAngleNormalizedDegrees = new PolarPoint(center, layoutOptions.radius, endAngleDegrees)
             .normalize(startAngleDegrees)
             .angle.convertToDegrees();
 
         const knobPositionPolar = new PolarPoint(
             center,
-            circleOptions.radius,
+            layoutOptions.radius,
             new DegreeAngle(endAngleNormalizedDegrees.degrees * value + startAngleDegrees.degrees)
         );
         const knobPositionCartesian = knobPositionPolar.convertToCartesian();
@@ -75,7 +75,7 @@ export function CircleSelector({
             knobPositionPolar,
             knobPositionCartesian
         }
-    }, [value, circleOptions]);
+    }, [value, layoutOptions]);
 
     const pressed = React.useRef<{ pressed: boolean, lastRegisteredInput: number }>({
         pressed: false,
@@ -107,10 +107,10 @@ export function CircleSelector({
             const centerToPointLength = centerToPoint.calculateEuclideanDistance();
 
             return {
-                offset: Math.abs(circleOptions.radius - centerToPointLength),
+                offset: Math.abs(layoutOptions.radius - centerToPointLength),
                 point: new CartesianPoint(
-                    centerToPoint.x / centerToPointLength * circleOptions.radius + center.x,
-                    centerToPoint.y / centerToPointLength * circleOptions.radius + center.y
+                    centerToPoint.x / centerToPointLength * layoutOptions.radius + center.x,
+                    centerToPoint.y / centerToPointLength * layoutOptions.radius + center.y
                 )
             };
         }
@@ -131,7 +131,7 @@ export function CircleSelector({
 
         /* Check whether knob is in the "invalid part" of the circle */
         const knobOpeningAngleDegrees = pointOnCircleCartesian.point.convertPointOnCircleToPolar(
-            center, circleOptions.radius)
+            center, layoutOptions.radius)
             .normalize(startAngleDegrees)
             .angle.convertToDegrees();
 
@@ -152,16 +152,16 @@ export function CircleSelector({
         <svg width={width} height={width}>
             <OpenCircleSvg
                 pathProps={styleOptions?.secondaryCircleProps}
-                circleOptions={{ center, ...circleOptions }}
+                layoutOptions={{ center, ...layoutOptions }}
                 styleOptions={{
                     className: styleOptions?.secondaryCircleClass
                 }} />
             <OpenCircleSvg
                 pathProps={styleOptions?.primaryCircleProps}
-                circleOptions={{
+                layoutOptions={{
                     center,
-                    radius: circleOptions.radius,
-                    startAngle: circleOptions.startAngle,
+                    radius: layoutOptions.radius,
+                    startAngle: layoutOptions.startAngle,
                     endAngle: knobPositionPolar.angle
                 }}
                 styleOptions={{
