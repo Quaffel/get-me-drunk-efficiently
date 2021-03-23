@@ -1,5 +1,5 @@
 import React from "react";
-import { Angle, CartesianPoint, DegreeAngle, PolarPoint } from "./math2d";
+import { Angle, CartesianPoint, PolarPoint } from "./math2d";
 
 export function OpenCircleSvg({
     pathProps,
