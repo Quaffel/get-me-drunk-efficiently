@@ -64,7 +64,15 @@ export function IngredientList({ ingredients, setIngredients }: { ingredients: I
     return (
         <>
             <label htmlFor="ingredientInput" className="searchform-label">What's inside your fridge?</label>
-            <input type="text" id="ingredientInput" autoComplete="off" value={currentIngredient} onChange={event => setCurrentIngredient(event.target.value)} onKeyDown={ingredientSubmit} className="searchform-input"></input>
+            <input 
+                type="text" 
+                id="ingredientInput" 
+                autoComplete="off" 
+                value={currentIngredient} 
+                onChange={event => setCurrentIngredient(event.target.value)} 
+                onKeyDown={ingredientSubmit} 
+                className="searchform-input" 
+            />
             {currentIngredient.length > 2 && !!recommendation && <>{recommendation.name} ?</>}
             {currentIngredient.length > 2 && !recommendation && <>No such ingredient</>}
             {ingredients.map(ingredient =>
