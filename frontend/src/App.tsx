@@ -31,7 +31,7 @@ const drinkAmounts = [
 function App() {
   const [state, setState] = React.useState<{ pending?: true, loading?: true, result?: IDrinkAmount[], error?: string  }>({ pending: true });
 
-  async function startRecomendation(query: { ingredients: IIngredient[], weight: number, promille: number }) {
+  async function startRecommendation(query: { ingredients: IIngredient[], weight: number, promille: number }) {
     setState({ loading: true });
 
     try {
@@ -63,7 +63,7 @@ function App() {
     return (
       <Container>
         {!!state.result && !state.result.length && <Banner.Warning title="No result found" text="Adapt your query" />}
-        <SearchForm submit={(weight, ingredients) => startRecomendation({ ingredients: [], weight, promille: 1 })} />
+        <SearchForm submit={startRecommendation} />
       </Container>
     )
   }
