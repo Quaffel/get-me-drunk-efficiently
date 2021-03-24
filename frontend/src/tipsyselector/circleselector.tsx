@@ -168,7 +168,9 @@ export function CircleSelector({
             element.removeEventListener("mousemove", onMove);
             element.removeEventListener("touchmove", onMove);
         }
-    });
+    // eslint demands 'onMove' to be in the dependencies array as well
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [containerRef]);
 
     return <div ref={containerRef}
         onTouchStart={onPress} onTouchEnd={onRelease} onMouseDown={onPress} onMouseUp={onRelease}>
