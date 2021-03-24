@@ -20,7 +20,7 @@ Card.Content = function({ title, children }: React.PropsWithChildren<{ title: st
 
 Card.Image = function({ src }: { src: string }) {
     return <div className="basic-card-image__container">
-        <img src={src} className="basic-card-image" />
+        <img src={src} alt="cocktail" className="basic-card-image" />
     </div>;
 }
 

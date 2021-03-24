@@ -15,4 +15,4 @@ fetchDrinks().then(() => {
     console.log(`Successfully cached %vol for ${Object.keys(alcohol).length} categorys!`);
 });
 
-app.listen(80, () => console.log('Started the backend on port 80'));
+app.listen(4000, () => console.log("Started the backend on port 4000"));
