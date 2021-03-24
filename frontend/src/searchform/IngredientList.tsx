@@ -54,6 +54,7 @@ export function IngredientList({ ingredients, setIngredients }: { ingredients: I
 
     const ingredientSubmit = (event: React.KeyboardEvent<HTMLInputElement>) => {
         if (event.code !== "Enter") return;
+        if(currentIngredient.length <= 2) return;
         if(!recommendation) return;
         if(ingredients.includes(recommendation)) return;
 
