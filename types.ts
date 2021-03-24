@@ -1,12 +1,18 @@
 export interface IIngredient {
     name: string;
+    alcohol: number;
+}
+
+export interface IIngredientAmount {
+    ingredient: IIngredient;
+    amount: number;
 }
 
 export interface IDrink {
     name: string;
     description?: string;
     instructions?: string[];
-    ingredients: IIngredient[];
+    ingredients: IIngredientAmount[];
 }
 
 export interface IDrinkAmount {

@@ -1,5 +1,5 @@
-import { IDrinkAmount, IIngredient } from "../../types";
-import { getDrinks, getIngredients } from "./data";
+import { IDrinkAmount, IIngredient } from '../../types';
+import { getDrinks, getIngredients } from './data';
 
 export function getAllIngredients(): IIngredient[] {
     return getIngredients();
@@ -12,7 +12,9 @@ export function getOptimalDrinkAmounts(
 ): IDrinkAmount[] {
     const allDrinks = getDrinks();
     const availableDrinks = allDrinks.filter(drink => 
-        areIngredientsAvailable(drink.ingredients, availableIngredients));
+        areIngredientsAvailable(drink.ingredients.map(ingredientAmount => ingredientAmount.ingredient), availableIngredients));
+
+    
 
     return [];
 }
