@@ -22,21 +22,23 @@ export function useTipsySelector({
     const formattedValue = value.toFixed(2) + "\u2030";
 
     const el = <div className="tipsyselector-container">
-        <h2>How drunk do you want to get?</h2> 
-        <CircleSelector displayValue={formattedValue}
-            value={normalizedValue} setValue={setNormalizedValue}
-            layoutOptions={{
-                radius: styleOptions?.radius ?? 100,
-                startAngle: new DegreeAngle(130),
-                endAngle: new DegreeAngle(50)
-            }}
-            styleOptions={{
-                primaryCircleClass: "tipsyselector-primary",
-                secondaryCircleClass: "tipsyselector-secondary",
-                knobClass: "tipsyselector-knob",
-                valueDisplayClass: "tipsyselector-display"
-            }}
-        />
+        <h2 className="searchform-label">How drunk do you want to get?</h2>
+        <div className="circleselector-container">
+            <CircleSelector displayValue={formattedValue}
+                value={normalizedValue} setValue={setNormalizedValue}
+                layoutOptions={{
+                    radius: styleOptions?.radius ?? 100,
+                    startAngle: new DegreeAngle(130),
+                    endAngle: new DegreeAngle(50)
+                }}
+                styleOptions={{
+                    primaryCircleClass: "tipsyselector-primary",
+                    secondaryCircleClass: "tipsyselector-secondary",
+                    knobClass: "tipsyselector-knob",
+                    valueDisplayClass: "tipsyselector-display"
+                }}
+            />
+        </div>
     </div>;
 
     return [el, value];

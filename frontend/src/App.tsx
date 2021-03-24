@@ -56,7 +56,7 @@ function App() {
 
 function Container({ children }: React.PropsWithChildren<{}>) {
   return <div className="app">
-    <div className="app-title">Get me drunk</div>
+    <div className="app-title">Get me drunk <span className="app-title-suffix">efficiently</span></div>
     {children}
   </div>
 }

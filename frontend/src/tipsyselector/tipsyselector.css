@@ -3,7 +3,7 @@
 }
 
 .tipsyselector-secondary {
-    stroke: var(--secondary);
+    stroke: var(--secondary-highlight);
 }
 
 .tipsyselector-knob {
@@ -14,4 +14,9 @@
     font-size: 2rem;
     pointer-events: none;
     user-select: none;
+}
+
+.circleselector-container {
+    display: flex;
+    justify-content: center;
 }

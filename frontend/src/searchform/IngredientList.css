@@ -1,17 +1,16 @@
 .ingredient-delete-button {
     all: unset;
-    font-size: 10px;
+    font-size: 20px;
     font-weight: bold;
     color: var(--primary);
     border: 1px var(--warning) solid;
-    width: 10px;
-    height: 10px;
-    line-height: 5px;
+    width: 15px;
+    height: 15px;
+    line-height: 0px;
     padding: 2.5px;
     text-align: center;
-    border-radius: 10px; 
+    border-radius: 15px; 
     cursor: pointer;
-    margin-top: 3px;
     background-color: var(--warning);
 }
 
@@ -20,10 +19,11 @@
     flex-direction: row;
     max-width: 1024px;
     border: 2px black ;
-    border-radius: 4px;;
-    margin: 1px 0px 1px 0px;
-    padding: 3px;
+    border-radius: 16px;
+    margin: 5px 0px 5px 0px;
+    padding: 5px 5px 5px 10px;
     background-color: var(--secondary-highlight);
+    width: 90%;
 }
 
 .ingredient-label {
