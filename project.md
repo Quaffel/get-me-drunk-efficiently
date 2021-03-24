@@ -93,36 +93,21 @@ Die Weiterführenden Informationen zum Alkoholgehalt werden über die FoodID aus
 ### WikiMedia
 Die Bilder zu den jeweiligen Cocktails werden über das HTTP-Protokoll und SPARSQL aus dem WikiMedia Datenbestand angefragt.
 
-# Lösungsstrategie
-
-
 # Building Block View
+## Scope und Kontext
+![Scope und Kontext][Scope und Kontext]
 
-# Whitebox Overall System
+## Ebene 1
+![Ebene 1][Ebene 1]
 
-Motivation
+## Ebene 2a Backend
+![Ebene_2_backend][Ebene_2_backend]
 
-Contained Building Blocks
 
-Important Interfaces
+# Laufzeitsicht
+![Laufzeitischt][Laufzeitischt]
 
-# Runtime View
 
-# Deployment View
-
-# Infrastructure Level 1
-
-# Cross-cutting Concepts
-
-# Design Decisions
-
-# Quality Requirements
-
-# Quality Tree
-
-# Quality Scenarios
-
-# Risks and Technical Debts
 
 
 
@@ -132,3 +117,10 @@ Important Interfaces
 
 [Fachlicher_Kontext]: doc_ressources/images/fachlicher_kontext.png
 [Technischer_Kontext]: doc_ressources/images/technischer_kontext.png
+
+[Scope und Kontext]: doc_ressources/images/scope_and_context.png
+[Ebene 1]: doc_ressources/images/Ebene_1.png
+[Ebene_2_backend]: doc_ressources/images/Ebene_2_Backend.png
+
+
+[Laufzeitischt]: doc_ressources/images/Ablaufsicht.png
