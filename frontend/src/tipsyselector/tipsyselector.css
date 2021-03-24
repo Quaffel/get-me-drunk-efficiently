@@ -1,0 +1,17 @@
+.tipsyselector-primary {
+    stroke: var(--primary);
+}
+
+.tipsyselector-secondary {
+    stroke: var(--secondary);
+}
+
+.tipsyselector-knob {
+    stroke: var(--secondary-highlight);
+}
+
+.tipsyselector-display {
+    font-size: 2rem;
+    pointer-events: none;
+    user-select: none;
+}
