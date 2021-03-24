@@ -5,7 +5,8 @@ import { IIngredient } from "../../../types";
 
 import * as API from "../api";
 
-const loadAllIngredients = API.getIngredients();
+export const loadAllIngredients = API.getIngredients();
+
 
 const normalize = (str: string) =>
   str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
