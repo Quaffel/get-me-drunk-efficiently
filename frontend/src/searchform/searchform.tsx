@@ -1,9 +1,22 @@
 import * as React from 'react';
 import './searchform.css';
 
-import { IngredientList } from './IngredientList';
+import { IngredientList, loadAllIngredients } from './IngredientList';
 import { IIngredient } from "../../../types";
 import { useTipsySelector } from '../tipsyselector/tipsyselector';
+
+const DEFAULT_INGREDIENTS = [
+    "carbonated water",
+    "coffee",
+    "cola",
+    "crushed ice",
+    "cow's milk",
+    "drinking water",
+    "ice",
+    "sugar",
+    "milk",
+    "water",
+];
 
 function SearchForm({
     submit
@@ -14,6 +27,13 @@ function SearchForm({
     const [ingredients, setIngredients] = React.useState<IIngredient[]>([]);
     const [tipsySelectorEl, promille] = useTipsySelector({ rangeOptions: { min: .3, max: 2 } });
 
+    // If the ingredients were loaded before the user started adding some, 
+    // prefill the ingredient list with something basically everyone has
+    React.useEffect(() => {
+        loadAllIngredients
+            .then(result => setIngredients(prev => prev.length ? prev : result.ingredients.filter(it => DEFAULT_INGREDIENTS.includes(it.name)))); 
+    }, []);
+    
     return (
         <>
             <div className="segment">
