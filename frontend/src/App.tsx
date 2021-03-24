@@ -21,6 +21,10 @@ function App() {
     }
   }
 
+  function goBack() {
+    setState({pending: true});
+  }
+
 
   if (state.loading) {
     return (
@@ -49,7 +53,7 @@ function App() {
 
   return (
     <Container>
-      <DrinkList drinkAmounts={state.result} />
+      <DrinkList drinkAmounts={state.result} goBack={goBack} />
     </Container>
   );
 }
