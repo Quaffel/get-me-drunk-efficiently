@@ -1,26 +1,32 @@
 import * as React from 'react';
 import './searchform.css';
 
-import { IngredientList } from './IngredientList';
+import { IngredientList, loadAllIngredients } from './IngredientList';
 import { IIngredient } from "../../../types";
 
 const DEFAULT_INGREDIENTS = [
-    {"name":"carbonated water","alcohol":0},
-    {"name":"coffee","alcohol":0},
-    {"name":"cola","alcohol":0},
-    {"name":"crushed ice","alcohol":0},
-    {"name":"cow's milk","alcohol":0},
-    {"name":"drinking water","alcohol":0.040999999999999995},
-    {"name":"ice","alcohol":0},
-    {"name":"sugar","alcohol":0},
-    {"name":"milk","alcohol":0},
-    {"name":"water","alcohol":0}
+    "carbonated water",
+    "coffee",
+    "cola",
+    "crushed ice",
+    "cow's milk",
+    "drinking water",
+    "ice",
+    "sugar",
+    "milk",
+    "water",
 ];
 
 function SearchForm({submit} : { submit(query: { weight: number, ingredients: IIngredient[], promille: number }): void,  }) {
     const [weight, setWeight] = React.useState(70);
-    const [ingredients, setIngredients] = React.useState<IIngredient[]>(DEFAULT_INGREDIENTS);
+    const [ingredients, setIngredients] = React.useState<IIngredient[]>([]);
 
+    // If the ingredients were loaded before the user started adding some, 
+    // prefill the ingredient list with something basically everyone has
+    React.useEffect(() => {
+        loadAllIngredients
+            .then(result => setIngredients(prev => prev.length ? prev : result.ingredients.filter(it => DEFAULT_INGREDIENTS.includes(it.name)))); 
+    }, []);
     return (
         <div className="searchform-container">
             <IngredientList ingredients={ingredients} setIngredients={setIngredients}/>
