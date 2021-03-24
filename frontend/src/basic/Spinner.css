@@ -7,7 +7,7 @@
     margin: 100px auto;
     text-align: center;
     
-    font-family: 'Montserrat Subrayada', sans-serif;
+    font-family: var(--primary-font);
     line-height: 400px;
     font-size: 30px;
 
