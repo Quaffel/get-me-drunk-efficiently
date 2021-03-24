@@ -83,7 +83,7 @@ export function IngredientList({ ingredients, setIngredients }: { ingredients: I
                     onChange={event => setCurrentIngredient(event.target.value)} 
                     onKeyDown={ingredientSubmit}
                     className="searchform-input-value"
-                    style={{ width: (2 + currentIngredient.length) * 10 + "px"}}
+                    style={{ width: (1 + currentIngredient.length) * 10 + "px"}}
                     ref={inputRef}
                 />
                 {currentIngredient.length > 2 && !!recommendation && 
