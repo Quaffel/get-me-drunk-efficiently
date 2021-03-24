@@ -97,15 +97,50 @@ Die Bilder zu den jeweiligen Cocktails werden über das HTTP-Protokoll und SPARS
 ## Scope und Kontext
 ![Scope und Kontext][Scope und Kontext]
 
+### WIKI-Data
+Die Wiki-Data Datenbank ist der zentrale Datenbestand über den die Informationen zu Cocktails bezogen werden. Diese Schnittstelle wird über sog. SPARQL querries angesprochen.
+
+### Open Food Facts
+Datenbank über Witerführende Informationen wie den Alkoholgehalt fals dieser in Wiki-Data nicht vorhanden ist.
+Diese REST baiserte Schnittstelle wird vom Backend und kann über das HTTP-Protokoll aufgerufen werden.
+
+###  GMDE
+Das Back- und Frontend, welche die Zutaten des Benutzers entgegen nimmt und daraufhin eine Auswahl an Cocktails zusammenstellt.
+
 ## Ebene 1
 ![Ebene 1][Ebene 1]
+### Backend
+Das Backend kommuniziert auf der einen seite mit den externen Schnittstellen um die Daten für die Cocktails zusammen zu sammeln. Auf der anderen Seite kommuniziert das Backend über REST-Schnitstellen mit dem Frontend um Filterparameter usw. zu erhalten und eine passende Auswahl an Cocktails zusammen zu stellen und an das Frontend zurück zu schicken.
+
+### Frontend
+Das Frontend bildet die Schnittstelle zwischen dem Benutzer und dem Backend. Der Benutzer kann über eine Web-App auf das Frontend zugreifen und erhält dort auch die Cocktail-Zusammenstellung aus dem Backend.
 
 ## Ebene 2a Backend
 ![Ebene_2_backend][Ebene_2_backend]
 
+### Data
+Data ist im Backend für die Kommunikation mit den externen Services zuständig. Hier werden die Anfragen an die APIs getätigt und die Daten für die Cocktails aggregiert.
+
+### Service
+Service beinhaltet die Anwendungslogik um die Daten welche von den externen Systemen bezogen wereden weiter zu verarbeiten. Hier werden die Zutaten gefiltert welche vom benutzer im Frontend angegeben werden und auch die Cocktails zusammengestellt die dann zum Frontend zurückgeschickt werden.
+
+### API 
+Stellt die REST-Schnittstelle welche vom Fronend angesprochen wird zur verfügung.
 
 # Laufzeitsicht
 ![Laufzeitischt][Laufzeitischt]
+1. Beim Systemstart werden initial die Daten von den externen Systemen abgefragt und gespeichert. dies wird gemacht, da die SPARQL-Anfragen unter Umständen sehr lange dauern.
+2. Der Benutzer ruft das Frontend auf
+3. Das Frontend ruft alle Zutaten (Ingredients) vom backend ab um eine Auto-Vervollständigung zur verfügung zu stellen.
+4. Der Benutzer gibt Zutaten, Körpergewicht und gewünschten Ziel-Promillwert ein.
+5. Das Frontend schickt die Daten die vvom Benutzer eigegeben werden an das Backend.
+6. Das Backend berechnet anhand der Eingaben des Benutzers die möglichen Cocktailkombinationen und schickt diese an das Frontend zurück.
+7. Dsa Frontend zeigt die Cocktails an, welche aufgrund der Eingaben vom Backend zurückgeschickt wurden.
+
+# Konzepte
+
+![DDD][DDD]
+
 
 
 
@@ -124,3 +159,5 @@ Die Bilder zu den jeweiligen Cocktails werden über das HTTP-Protokoll und SPARS
 
 
 [Laufzeitischt]: doc_ressources/images/Ablaufsicht.png
+
+[DDD]: doc_ressources/images/DDD_Modle.png
