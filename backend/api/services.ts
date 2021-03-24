@@ -23,8 +23,8 @@ export function getOptimalDrinkAmounts(
     availableDrinks.forEach((drink) => {
         availableDrinkAmounts.push({
             drink: drink,
-            amount: drink.ingredients.map(ingredient => ingredient.amount).reduce((prev, val) => (+prev) + (+val)),
-            amountAlcohol: drink.ingredients.map(ingredient => ingredient.ingredient.alcohol * ingredient.amount).reduce((prev, val) => (+prev) + (+val))
+            amount: drink.ingredients.filter(ingredient => ingredient.unit === 'ml').map(ingredient => ingredient.amount).reduce((prev, val) => (+prev) + (+val)),
+            amountAlcohol: drink.ingredients.filter(ingredient => ingredient.unit === 'ml').map(ingredient => ingredient.ingredient.alcohol * ingredient.amount).reduce((prev, val) => (+prev) + (+val))
         });
     });
 

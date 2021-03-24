@@ -6,6 +6,7 @@ export interface IIngredient {
 export interface IIngredientAmount {
     ingredient: IIngredient;
     amount: number;
+    unit: string;
 }
 
 export interface IDrink {
