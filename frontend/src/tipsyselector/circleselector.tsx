@@ -89,7 +89,13 @@ export function CircleSelector({
         pressed.current.lastRegisteredInput = 0;
     }
 
-    function onMove(event: React.MouseEvent<HTMLDivElement>) {
+    function onMove(this: HTMLDivElement, event: MouseEvent | TouchEvent) {
+        function isTouchEvent(event: Event): event is TouchEvent {
+            return (event as any).touches;
+        }
+
+        event.preventDefault();
+
         /* Debounce and check for mouse press */
         const currentTime = new Date().getTime();
         // Mouse movement only, so the input must not change the value
@@ -116,10 +122,10 @@ export function CircleSelector({
         }
 
         // Rectangle containing all elements. Offsets are relative to the viewport.
-        const targetDimensionsInViewport: DOMRect = event.currentTarget.getBoundingClientRect();
+        const targetDimensionsInViewport: DOMRect = this.getBoundingClientRect();
         const cursorPosition: Vector = new CartesianPoint(
-            event.clientX - targetDimensionsInViewport.left,
-            event.clientY - targetDimensionsInViewport.top
+            (isTouchEvent(event) ? event.touches[0].clientX : event.clientX) - targetDimensionsInViewport.left,
+            (isTouchEvent(event) ? event.touches[0].clientY : event.clientY) - targetDimensionsInViewport.top
         );
 
         const pointOnCircleCartesian = calculateClosestPointOnCircle(cursorPosition);
@@ -147,7 +153,26 @@ export function CircleSelector({
         setValue(percentage);
     }
 
-    return <div onMouseMove={onMove}
+    const containerRef = React.useRef<HTMLDivElement>(null);
+    React.useEffect(() => {
+        const element = containerRef.current;
+        if (!element) {
+            return;
+        }
+
+        // Necessary as event listeners must not be passive (Event#preventDefault fails otherwise)
+        element.addEventListener("mousemove", onMove, { passive: false });
+        element.addEventListener("touchmove", onMove, { passive: false });
+
+        return () => {
+            element.removeEventListener("mousemove", onMove);
+            element.removeEventListener("touchmove", onMove);
+        }
+    // eslint demands 'onMove' to be in the dependencies array as well
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [containerRef]);
+
+    return <div ref={containerRef}
         onTouchStart={onPress} onTouchEnd={onRelease} onMouseDown={onPress} onMouseUp={onRelease}>
         <svg width={width} height={width}>
             <OpenCircleSvg
