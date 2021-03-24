@@ -18,6 +18,7 @@ export interface IDrink {
 export interface IDrinkAmount {
     drink: IDrink;
     amount: number;
+    amountAlcohol: number;
 }
 
 export interface IRequest {
