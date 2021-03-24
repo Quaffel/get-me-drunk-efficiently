@@ -21,6 +21,10 @@ function App() {
     }
   }
 
+  function goBack() {
+    setState({pending: true});
+  }
+
 
   if (state.loading) {
     return (
@@ -49,14 +53,14 @@ function App() {
 
   return (
     <Container>
-      <DrinkList drinkAmounts={state.result} />
+      <DrinkList drinkAmounts={state.result} goBack={goBack} />
     </Container>
   );
 }
 
 function Container({ children }: React.PropsWithChildren<{}>) {
   return <div className="app">
-    <div className="app-title">Get me drunk</div>
+    <div className="app-title">Get me drunk <span className="app-title-suffix">efficiently</span></div>
     {children}
   </div>
 }

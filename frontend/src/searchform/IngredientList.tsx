@@ -84,7 +84,7 @@ export function IngredientList({ ingredients, setIngredients }: { ingredients: I
             {ingredients.map(ingredient =>
                 <div key={ingredient.name} className="ingredient-container">
                     <div className="ingredient-label">{ingredient.name}</div>
-                    <button onClick={() => handleDelete(ingredient)} className="ingredient-delete-button">×</button>
+                    <button onClick={() => handleDelete(ingredient)} className="ingredient-delete-button">X</button>
                 </div>)}
         </>
     )
