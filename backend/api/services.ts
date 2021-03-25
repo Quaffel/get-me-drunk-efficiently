@@ -97,7 +97,7 @@ function* getDrinksByMostAlc(targetAlcVolume: number, drinks: IDrink[]): Generat
 
   // Third pass: Lastly, if we can get even closer by hitting over the target, also add the smallest
   const smallest = drinks[drinks.length - 1];
-  if(Math.abs(targetAlcVolume - sumAlcoholVolume - smallest.alcoholVolume) < targetAlcVolume - sumAlcoholVolume)
+  if(smallest && Math.abs(targetAlcVolume - sumAlcoholVolume - smallest.alcoholVolume) < targetAlcVolume - sumAlcoholVolume)
     yield smallest;
    
 }
