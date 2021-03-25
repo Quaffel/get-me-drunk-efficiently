@@ -326,6 +326,7 @@ export async function fetchAlcohol(category: string): Promise<number> {
 }
 
 interface offResult {
+    count: number;
     products: {
         no_nutrition_data: '' | 'on',
         nutriments: {
@@ -335,13 +336,17 @@ interface offResult {
 }
 
 function parseOffResult(result: string): number {
-    const products = (JSON.parse(result) as offResult).products;
+    const { products, count } = (JSON.parse(result) as offResult);
 
     // Get all alcohol values from products
     const productsAlcohol = products.filter(el => el.no_nutrition_data === '').map(product => product.nutriments.alcohol).filter(val => val) as number[];
 
+    // For global categories such as "beverages", building an avergae value is useless
+    if(count > 1000)
+        return 0;
+        
     // Return average
-    return productsAlcohol.length < 1 ? 0 : productsAlcohol.reduce((prev, current) => (+prev) + (+current)) / productsAlcohol.length;
+    return productsAlcohol.reduce((sum, current) => sum + (+current), 0) / productsAlcohol.length;
 }
 
 function normalize(ingredientAmount: number, unit: string): { val: number, unit: string } {
