@@ -3,7 +3,7 @@ prefix wd: <http://www.wikidata.org/entity/>
 prefix bd: <http://www.bigdata.com/rdf#>
 prefix wikibase: <http://wikiba.se/ontology#>
 
-SELECT DISTINCT ?cocktail ?cocktailLabel ?ingredientLabel ?offCategory ?alcohol ?ingredientAmount ?ingredientUnitLabel
+SELECT DISTINCT ?cocktail ?cocktailLabel ?cocktailImageUrl ?ingredientLabel ?offCategory ?alcohol ?ingredientAmount ?ingredientUnitLabel
 WHERE {
   # Retrieves all entities that are at least one of the following:
   # - an instance of "cocktail"
@@ -11,10 +11,13 @@ WHERE {
   # - an instance of a subclass of "cocktail"
   ?cocktail wdt:P31?/wdt:P279* wd:Q134768.
 
-  # Removes all classes (instances of Q16889133; "classes")
+  # Removes all classes (instances of Q16889133 ("class")).
   FILTER NOT EXISTS {
     ?cocktail wdt:P31 wd:Q16889133.
   }
+
+  # Retrieves the cocktail's image if available.
+  OPTIONAL { ?cocktail wdt:P18 ?cocktailImageUrl. }
   
   # Queries the English label explictly to exclude entities that don't have a proper English label.
   # Using SERVICE wikibase:label would expose the entity's identifier if no label is present.
@@ -25,37 +28,37 @@ WHERE {
   # The identifiers for the Open Food Facts API are retrieved as well, if available.
   OPTIONAL {
     ?cocktail p:P186 ?ingredientStatement.
+    
+    ?ingredientStatement ps:P186 ?ingredient.
 
-    ?ingredientStatement ps:P186 ?ingredient;
-                         pqv:P1114/wikibase:quantityAmount ?ingredientAmount;
-                         pqv:P1114/wikibase:quantityUnit ?ingredientUnit.
+    OPTIONAL {
+      # Queries for quantitiy information
+      ?ingredientStatement pqv:P1114/wikibase:quantityAmount ?ingredientAmount;
+                           pqv:P1114/wikibase:quantityUnit ?ingredientUnit.
+      
+      # Queries the ingredient's English label explicitly.
+      ?ingredientUnit rdfs:label ?ingredientUnitLabel.
+      FILTER (lang(?ingredientUnitLabel) = "en").
+    }
     
-    
-    # Queries the ingredient's and its unit's English label explicitly.
+    # Queries the ingredient's English label explicitly.
     ?ingredient rdfs:label ?ingredientLabel.
     FILTER (lang(?ingredientLabel) = "en").
-
-    ?ingredientUnit rdfs:label ?ingredientUnitLabel.
-    FILTER (lang(?ingredientUnitLabel) = "en").
     
     
     # If the ingredient is a subclass and/or an instance of another class, those classes are
     # queried as well if the entity itself doesn't hold sufficient information.
     # Querying those classes upfront might seem more efficient at first glance, but leads
     # to severe performance issues in practice (due to a data dependency that is hard to optimize).
-    # That's why '?ingredientClass' and '?ingredientSuperclass' are queried several times.
+    # That's why the respective classes and superclasses are queried several times.
 
-    # Queries the ingredient's alcohol concentration by volume (percentage points).
-    # If the ingredient itself doesn't have such a property, but the class the ingredient
-    # is an instance or a subclass of has, the property of the respective class is used instead.
+    # Queries the ingredient's alcohol concentration by volume (percentage points), if available.
     OPTIONAL { ?ingredient wdt:P2665 ?ingredientAlcohol. }
     OPTIONAL { ?ingredient wdt:P31/wdt:P2665 ?ingredientClassAlcohol. }
     OPTIONAL { ?ingredient wdt:P279/wdt:P2665 ?ingredientSuperclassAlcohol. }
     BIND(COALESCE(?ingredientAlcohol, ?ingredientClassAlcohol, ?ingredientSuperclassAlcohol) AS ?alcohol).
     
     # Retrieves the ingredient's Open Food Facts category, if available.
-    # If the ingredient itself doesn't have such aproperty, but the class the ingredient
-    # is an instnace or a subclass of has, the property of the respective class is used instead.
     OPTIONAL { ?ingredient wdt:P1821 ?ingredientOffCategory. }
     OPTIONAL { ?ingredient wdt:P31/wdt:P1821 ?ingredientClassOffCategory. }
     OPTIONAL { ?ingredient wdt:P279/wdt:P1821 ?ingredientSuperclassOffCategory. }
@@ -66,72 +69,5 @@ WHERE {
     # world-wide database (world.openfoodfacts.org), however, only the universal identifiers are required.
     FILTER (!CONTAINS(IF(BOUND(?offCategory), ?offCategory, ""), ":"))
   }
-
-  # Retrieves a cocktail's ingredients based on the P4330 ("contains") property.
-  # The identifiers for the Open Food Facts API are retrieved as well, if available.
-  OPTIONAL {
-    ?cocktail p:P4330 ?ingredientStatement.
-
-    ?ingredientStatement ps:P4330 ?ingredient;
-                         pqv:P1114/wikibase:quantityAmount ?ingredientAmount;
-                         pqv:P1114/wikibase:quantityUnit ?ingredientUnit.
-    
-    
-    # Queries the ingredient's and its unit's English label explicitly.
-    ?ingredient rdfs:label ?ingredientLabel.
-    FILTER (lang(?ingredientLabel) = "en").
-
-    ?ingredientUnit rdfs:label ?ingredientUnitLabel.
-    FILTER (lang(?ingredientUnitLabel) = "en").
-    
-
-    # Queries the ingredient's alcohol concentration by volume (percentage points).
-    OPTIONAL { ?ingredient wdt:P2665 ?ingredientAlcohol. }
-    OPTIONAL { ?ingredient wdt:P31/wdt:P2665 ?ingredientClassAlcohol. }
-    OPTIONAL { ?ingredient wdt:P279/wdt:P2665 ?ingredientSuperclassAlcohol. }
-    BIND(COALESCE(?ingredientAlcohol, ?ingredientClassAlcohol, ?ingredientSuperclassAlcohol) AS ?alcohol).
-    
-    # Retrieves the ingredient's Open Food Facts category, if available.
-    OPTIONAL { ?ingredient wdt:P1821 ?ingredientOffCategory. }
-    OPTIONAL { ?ingredient wdt:P31/wdt:P1821 ?ingredientClassOffCategory. }
-    OPTIONAL { ?ingredient wdt:P279/wdt:P1821 ?ingredientSuperclassOffCategory. }
-    BIND(COALESCE(?ingredientOffCategory, ?ingredientClassOffCategory, ?ingredientSuperclassOffCategory) AS ?offCategory).
-
-    FILTER (!CONTAINS(IF(BOUND(?offCategory), ?offCategory, ""), ":"))
-  }
-
-  # Retrieves a cocktail's ingredients based on the P527 ("has part") property.
-  # The identifiers for the Open Food Facts API are retrieved as well, if available.
-  OPTIONAL {
-    ?cocktail p:P527 ?ingredientStatement.
-
-    ?ingredientStatement ps:P527 ?ingredient;
-                         pqv:P1114/wikibase:quantityAmount ?ingredientAmount;
-                         pqv:P1114/wikibase:quantityUnit ?ingredientUnit.
-    
-    
-    # Queries the ingredient's and its unit's English label explicitly.
-    ?ingredient rdfs:label ?ingredientLabel.
-    FILTER (lang(?ingredientLabel) = "en").
-
-    ?ingredientUnit rdfs:label ?ingredientUnitLabel.
-    FILTER (lang(?ingredientUnitLabel) = "en").
-    
-
-    # Queries the ingredient's alcohol concentration by volume (percentage points).
-    OPTIONAL { ?ingredient wdt:P2665 ?ingredientAlcohol. }
-    OPTIONAL { ?ingredient wdt:P31/wdt:P2665 ?ingredientClassAlcohol. }
-    OPTIONAL { ?ingredient wdt:P279/wdt:P2665 ?ingredientSuperclassAlcohol. }
-    BIND(COALESCE(?ingredientAlcohol, ?ingredientClassAlcohol, ?ingredientSuperclassAlcohol) AS ?alcohol).
-    
-    # Retrieves the ingredient's Open Food Facts category, if available.
-    OPTIONAL { ?ingredient wdt:P1821 ?ingredientOffCategory. }
-    OPTIONAL { ?ingredient wdt:P31/wdt:P1821 ?ingredientClassOffCategory. }
-    OPTIONAL { ?ingredient wdt:P279/wdt:P1821 ?ingredientSuperclassOffCategory. }
-    BIND(COALESCE(?ingredientOffCategory, ?ingredientClassOffCategory, ?ingredientSuperclassOffCategory) AS ?offCategory).
-
-    FILTER (!CONTAINS(IF(BOUND(?offCategory), ?offCategory, ""), ":"))
-  }
 }
-
 ORDER BY ASC(?cocktailLabel)
