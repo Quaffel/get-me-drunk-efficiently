@@ -19,6 +19,10 @@
   --text-font: 'Quicksand', sans-serif;
 }
 
+html {
+  min-height: 100%;
+}
+
 body {
   background-color: var(--secondary);
   margin: 0;
