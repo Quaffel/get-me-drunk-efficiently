@@ -70,6 +70,8 @@ export function IngredientList({ ingredients, setIngredients }: { ingredients: I
 
     const inputRef = React.useRef<HTMLInputElement | null>(null);
 
+    const ingredientsSorted = React.useMemo(() => [...ingredients].sort((a, b) => a.name.localeCompare(b.name)), [ingredients]);
+
     return (
         <>
         
@@ -92,7 +94,7 @@ export function IngredientList({ ingredients, setIngredients }: { ingredients: I
                     <div className="searchform-completion"> - No such ingredient?</div>}
             
             </div>
-            {ingredients.map(ingredient =>
+            {ingredientsSorted.map(ingredient =>
                 <div key={ingredient.name} className="ingredient-container">
                     <div className="ingredient-label">{ingredient.name}</div>
                     <button onClick={() => handleDelete(ingredient)} className="ingredient-delete-button">X</button>
