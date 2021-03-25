@@ -15,8 +15,15 @@ export function getOptimalDrinkAmounts(
     const allDrinks = getDrinks();
 
     // Filter drinks with missing ingredients
-    const availableDrinks = allDrinks.filter(drink =>
-        areIngredientsAvailable(drink.ingredients.map(ingredientAmount => ingredientAmount.ingredient), availableIngredients));
+    let availableDrinks: IDrink[] = []; 
+    
+    if(availableIngredients.length) {
+        availableDrinks = allDrinks.filter(drink =>
+            areIngredientsAvailable(drink.ingredients.map(ingredientAmount => ingredientAmount.ingredient), availableIngredients)
+        );
+    } else {
+        availableDrinks = allDrinks;
+    }
 
     console.log(`From ${allDrinks.length} drinks, ${availableDrinks.length} are available`);
 
@@ -60,7 +67,6 @@ function areIngredientsAvailable(
     const availableIngredientNames = availableIngredients.map(ingredient => ingredient.name);
     const notAvailable = checkIngredients.reduce((count, ingredient) => count - +availableIngredientNames.includes(ingredient.name), checkIngredients.length);
 
-    console.log(`Of ${checkIngredients.length}, ${notAvailable} are not available `);
     return notAvailable === 0;
 }
 
