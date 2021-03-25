@@ -7,8 +7,8 @@ export function DrinkCard({ drink }: { drink: IDrink }) {
         <Card.Image src={"https://hips.hearstapps.com/del.h-cdn.co/assets/15/38/768x1156/gallery-1442433700-delish-halloween-cocktails-good-evil-drink.png?resize=480:*"} />
         <Card.Title name={drink.name} />
         <Card.Content title="Ingredients">
-            {drink.ingredients.map(ingredient => 
-                <>{ingredient.name} <br/></>    
+            {drink.ingredients.map(({ ingredient, amount, unit }) => 
+                <>{amount}{unit} {ingredient.name}<br/></>    
             )}
         </Card.Content>
         {!!drink.instructions?.length && <Card.Content title="Instructions">
