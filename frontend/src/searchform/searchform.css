@@ -61,4 +61,9 @@
     position: sticky;
     left: 90%;
     bottom: 2%;
+    box-shadow: 2px 2px 10px var(--secondary-shadow);
+}
+
+.searchform-submit:hover {
+    text-shadow: 2px 2px 10px var(--secondary-shadow);
 }

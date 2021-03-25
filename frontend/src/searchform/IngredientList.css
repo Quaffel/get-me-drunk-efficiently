@@ -14,6 +14,10 @@
     background-color: var(--warning);
 }
 
+.ingredient-delete-button:hover {
+    background-color: #ff6924;
+}
+
 .ingredient-container {
     display: flex;
     flex-direction: row;

@@ -41,9 +41,11 @@ body {
   text-align: center;
   padding: 10px 20px;
   font-size: 35px;
+  text-shadow: 2px 2px 10px var(--secondary-shadow);
 }
 
 .app-title-suffix {
   font-family: var(--accent-font);
   font-size: 30px;
+  text-shadow: 2px 2px 10px var(--secondary-shadow);
 }
