@@ -1,16 +1,29 @@
 @import url('https://fonts.googleapis.com/css2?family=Montserrat+Subrayada&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Quicksand&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Damion&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Train+One&display=swap');
 
 :root {
   --primary: white;
-  --secondary: #009ee7b0;
-  --secondary-highlight: #83c8e7;
-  --warning: #dd5c5c;
-  --title: #ffdf2aab;
+  --primary-opacity: #ffffff8e;
+  --secondary: #fd825165;
+  --secondary-highlight: #ffb091fd;
+  --secondary-shadow: #da6232a9;
+  
+  --tertiary: #ff418a;
+  --warning: #f55810;
+  --title: #ffcf33;
+
+  --primary-font: 'Train One', cursive;
+  --accent-font: 'Damion', cursive;
+  --text-font: 'Quicksand', sans-serif;
 }
 
 body {
-  background-color: var(--primary);
+  background-color: var(--secondary);
   margin: 0;
+  font-family: var(--text-font);
+  background: linear-gradient(var(--title), var(--tertiary));
 }
 
 .app {
@@ -20,9 +33,13 @@ body {
 
 .app-title {
   color: var(--primary);
-  background-color: var(--title);
-  font-family: 'Montserrat Subrayada';
+  font-family: var(--primary-font);
   text-align: center;
   padding: 10px 20px;
-  font-size: 25px;
+  font-size: 35px;
+}
+
+.app-title-suffix {
+  font-family: var(--accent-font);
+  font-size: 30px;
 }

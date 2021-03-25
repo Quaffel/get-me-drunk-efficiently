@@ -5,7 +5,8 @@ import { IIngredient } from "../../../types";
 
 import * as API from "../api";
 
-const loadAllIngredients = API.getIngredients();
+export const loadAllIngredients = API.getIngredients();
+
 
 const normalize = (str: string) =>
   str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
@@ -67,24 +68,34 @@ export function IngredientList({ ingredients, setIngredients }: { ingredients: I
         setIngredients(ingredients.filter(it => it !== ingredient));
     }
 
+    const inputRef = React.useRef<HTMLInputElement | null>(null);
+
     return (
         <>
+        
             <label htmlFor="ingredientInput" className="searchform-label">What's inside your fridge?</label>
-            <input 
-                type="text" 
-                id="ingredientInput" 
-                autoComplete="off" 
-                value={currentIngredient} 
-                onChange={event => setCurrentIngredient(event.target.value)} 
-                onKeyDown={ingredientSubmit} 
-                className="searchform-input" 
-            />
-            {currentIngredient.length > 2 && !!recommendation && <>{recommendation.name} ?</>}
-            {currentIngredient.length > 2 && !recommendation && <>No such ingredient</>}
+            <div className="searchform-input" onClick={() => inputRef.current?.focus()}>
+                <input 
+                    type="text" 
+                    id="ingredientInput" 
+                    autoComplete="off" 
+                    value={currentIngredient} 
+                    onChange={event => setCurrentIngredient(event.target.value)} 
+                    onKeyDown={ingredientSubmit}
+                    className="searchform-input-value"
+                    style={{ width: (1 + currentIngredient.length) * 10 + "px"}}
+                    ref={inputRef}
+                />
+                {currentIngredient.length > 2 && !!recommendation && 
+                    <div className="searchform-completion">{recommendation.name.slice(currentIngredient.length)}</div>}
+                {currentIngredient.length > 2 && !recommendation && 
+                    <div className="searchform-completion"> - No such ingredient?</div>}
+            
+            </div>
             {ingredients.map(ingredient =>
                 <div key={ingredient.name} className="ingredient-container">
                     <div className="ingredient-label">{ingredient.name}</div>
-                    <button onClick={() => handleDelete(ingredient)} className="ingredient-delete-button">×</button>
+                    <button onClick={() => handleDelete(ingredient)} className="ingredient-delete-button">X</button>
                 </div>)}
         </>
     )
