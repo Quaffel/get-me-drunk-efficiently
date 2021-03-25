@@ -5,6 +5,8 @@ import { IngredientList, loadAllIngredients } from './IngredientList';
 import { IIngredient } from "../../../types";
 import { useTipsySelector } from '../tipsyselector/tipsyselector';
 
+const INGREDIENT_STORE = "get-me-drunk-fridge";
+
 const DEFAULT_INGREDIENTS = [
     "carbonated water",
     "coffee",
@@ -30,9 +32,24 @@ function SearchForm({
     // If the ingredients were loaded before the user started adding some, 
     // prefill the ingredient list with something basically everyone has
     React.useEffect(() => {
-        loadAllIngredients
-            .then(result => setIngredients(prev => prev.length ? prev : result.ingredients.filter(it => DEFAULT_INGREDIENTS.includes(it.name)))); 
+        (async function() {
+            const { ingredients } = await loadAllIngredients;
+            const storedIngredients = JSON.parse(localStorage.getItem(INGREDIENT_STORE) || "[]");
+
+            const resultIngredients = ingredients.filter(it => 
+                DEFAULT_INGREDIENTS.includes(it.name) ||
+                storedIngredients.includes(it.name)
+            );
+
+            setIngredients(prev => prev.length ? prev : resultIngredients); 
+        })();
+       
     }, []);
+
+    React.useEffect(() => {
+        if(ingredients.length)
+            localStorage.setItem(INGREDIENT_STORE, JSON.stringify(ingredients.map(it => it.name)));
+    }, [ingredients]);
     
     return (
         <>

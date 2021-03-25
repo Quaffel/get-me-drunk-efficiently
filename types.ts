@@ -11,15 +11,16 @@ export interface IIngredientAmount {
 
 export interface IDrink {
     name: string;
+    image?: string;
     description?: string;
     instructions?: string[];
     ingredients: IIngredientAmount[];
+    alcoholVolume: number; /* in ml*/
 }
 
 export interface IDrinkAmount {
     drink: IDrink;
     amount: number;
-    amountAlcohol: number;
 }
 
 export interface IRequest {
