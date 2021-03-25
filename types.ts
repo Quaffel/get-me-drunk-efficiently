@@ -11,6 +11,7 @@ export interface IIngredientAmount {
 
 export interface IDrink {
     name: string;
+    image?: string;
     description?: string;
     instructions?: string[];
     ingredients: IIngredientAmount[];

@@ -4,7 +4,7 @@ import { Card } from "../basic/Card";
 
 export function DrinkCard({ drink }: { drink: IDrink }) {
     return <Card>
-        <Card.Image src={"https://hips.hearstapps.com/del.h-cdn.co/assets/15/38/768x1156/gallery-1442433700-delish-halloween-cocktails-good-evil-drink.png?resize=480:*"} />
+        <Card.Image src={drink.image ?? "https://upload.wikimedia.org/wikipedia/commons/e/e7/Flaming_cocktails.jpg"} />
         <Card.Title name={drink.name} />
         <Card.Content title="Ingredients">
             {drink.ingredients.map(({ ingredient, amount, unit }) => 
