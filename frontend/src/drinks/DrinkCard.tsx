@@ -8,7 +8,7 @@ export function DrinkCard({ drink }: { drink: IDrink }) {
         <Card.Title name={drink.name} />
         <Card.Content title="Ingredients">
             {drink.ingredients.map(({ ingredient, amount, unit }) => 
-                <>{amount}{unit} {ingredient.name}<br/></>    
+                <>{amount.toFixed(0)}{unit} {ingredient.name}<br/></>    
             )}
         </Card.Content>
         {!!drink.instructions?.length && <Card.Content title="Instructions">
