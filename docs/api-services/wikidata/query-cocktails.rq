@@ -27,12 +27,15 @@ WHERE {
   # Retrieves a cocktail's ingredients based on the P186 ("made from material") property.
   # The identifiers for the Open Food Facts API are retrieved as well, if available.
   OPTIONAL {
-    ?cocktail p:P186 ?ingredientStatement.
-    
+    ?cocktail p:P186 ?ingredientStatement.    
     ?ingredientStatement ps:P186 ?ingredient.
 
+    # Queries the ingredient's English label explicitly.
+    ?ingredient rdfs:label ?ingredientLabel.
+    FILTER (lang(?ingredientLabel) = "en").
+
+    # Queries for quantitiy information
     OPTIONAL {
-      # Queries for quantitiy information
       ?ingredientStatement pqv:P1114/wikibase:quantityAmount ?ingredientAmount;
                            pqv:P1114/wikibase:quantityUnit ?ingredientUnit.
       
@@ -40,10 +43,11 @@ WHERE {
       ?ingredientUnit rdfs:label ?ingredientUnitLabel.
       FILTER (lang(?ingredientUnitLabel) = "en").
     }
-    
-    # Queries the ingredient's English label explicitly.
-    ?ingredient rdfs:label ?ingredientLabel.
-    FILTER (lang(?ingredientLabel) = "en").
+
+    # Excludes ingredients that only apply to a certain part (P518 ("applies to part"); mostly Q81727 ("Stemware")) 
+    # or are only used for serving the cocktail, but aren't part of it (P366 ("use"); mostly Q59541 ("garnish")).
+    FILTER NOT EXISTS { ?ingredientStatement pq:P518 ?_part. }
+    FILTER NOT EXISTS { ?ingredientStatement pq:P366 ?_use. }
     
     
     # If the ingredient is a subclass and/or an instance of another class, those classes are
