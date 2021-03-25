@@ -24,14 +24,15 @@ export function getOptimalDrinkAmounts(
     // Approximate target total alcohol in ml based on weight and promille
     const targetAlcoholMl = calculateTargetAlcohol(promille, weight);
 
-    // Generate all possible combinations
-    // const combinations = generatePossibleCombinations(3, availableDrinkAmounts);
+        
+    // a drink might be yielded multiple times, group them as DrinkAmounts
+    const drinkAmount = new Map<IDrink, number>();
 
-    // Select combination closest to target
-    // const optimal = combinations.reduce((prev, val) => Math.pow(targetAlcoholMl - val.alcohol, 2) > Math.pow(targetAlcoholMl - prev.alcohol, 2) ? prev : val);
-
-    const optimal = [...getDrinksByMostAlc(targetAlcoholMl, availableDrinks)]
-        .map(drink => ({ drink, amount: 1 }));
+    for(const drink of getDrinksByMostAlc(targetAlcoholMl, availableDrinks)) {
+        drinkAmount.set(drink, (drinkAmount.get(drink) ?? 0) + 1);
+    }
+    
+    const optimal: IDrinkAmount[] = [...drinkAmount.entries()].map(([drink, amount]) => ({ drink, amount }));
 
     const resultingAlcoholVolume = optimal
         .reduce((sum, { drink, amount }) => sum + amount * drink.alcoholVolume, 0);
@@ -63,42 +64,40 @@ function areIngredientsAvailable(
     return notAvailable === 0;
 }
 
+// the maximum number a drink will be repeated
+const MAX_REPETITION = 4;
+// How likely a drink will be skipped randomly
+// TODO: Maybe increase the more drinks there are?
+const SKIP_PROPABILITY = 0.9;
 
+
+/* Yields a random combination of Drinks till the targetAlcVolume is closely reached */
 function* getDrinksByMostAlc(targetAlcVolume: number, drinks: IDrink[]): Generator<IDrink> {
   let sumAlcoholVolume = 0;
+  // First pass: get some random drinks
+  first_pass: for(const drink of drinks) {
+    // NOTE: a drink might be added another time in the second pass and a second time in the third pass
+    repetition: for(let amount = 0; amount < MAX_REPETITION - 2; amount++) {
+        console.log(`Checking ${drink.name} with ${drink.alcoholVolume}ml alc, trying to reach ${targetAlcVolume}ml having ${sumAlcoholVolume}ml`);
+        if(Math.random() < SKIP_PROPABILITY) continue repetition; // skip some drinks to get a bit of variation
+        if(sumAlcoholVolume + drink.alcoholVolume! > targetAlcVolume) continue first_pass; // gets the person more dizzy than wanted, skip
+    
+        yield drink;
+        sumAlcoholVolume += drink.alcoholVolume!;
+    }
+  }
+
+  // Second pass: Get close to target
   for(const drink of drinks) {
     console.log(`Checking ${drink.name} with ${drink.alcoholVolume}ml alc, trying to reach ${targetAlcVolume}ml having ${sumAlcoholVolume}ml`);
-    if(Math.random() > 0.8) continue; // skip some drinks to get a bit of variation
     if(sumAlcoholVolume + drink.alcoholVolume! > targetAlcVolume) continue; // gets the person more dizzy than wanted, skip
     yield drink;
     sumAlcoholVolume += drink.alcoholVolume!;
   }
 
-  if(sumAlcoholVolume < targetAlcVolume) {
-     // not quite reached, do we get closer if we add the last one?
-  } 
+  // Third pass: Lastly, if we can get even closer by hitting over the target, also add the smallest
+  const smallest = drinks[drinks.length - 1];
+  if(Math.abs(targetAlcVolume - sumAlcoholVolume - smallest.alcoholVolume) < targetAlcVolume - sumAlcoholVolume)
+    yield smallest;
    
 }
-
-/* function generatePossibleCombinations(maxDrinks: number, availableDrinkAmounts: IDrinkAmount[]): { alcohol: number, combination: IDrinkAmount[] }[] {
-    // Generation-based combinations
-    const allCombinations: { alcohol: number, combination: IDrinkAmount[] }[][] = [
-        [{ alcohol: 0, combination: [] }] // Initial starting value representing "drink nothing"
-    ];
-
-    for (let gen = 1; gen <= maxDrinks; gen++) {
-        allCombinations[gen] = [];
-        // For every combination of last generation, append every drink
-        allCombinations[gen-1].forEach((last) => {
-            for(let current = 0; current < availableDrinkAmounts.length; current++) {
-                const newCombination = last.combination.concat(availableDrinkAmounts[current]);
-                allCombinations[gen].push({
-                    alcohol: newCombination.map(drinkAmount => drinkAmount.amountAlcohol).reduce((prev, val) => prev + val),
-                    combination: newCombination
-                });
-            }
-        });
-    }
-
-    return allCombinations.flat();
-} */
