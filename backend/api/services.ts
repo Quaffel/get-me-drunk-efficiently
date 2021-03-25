@@ -18,6 +18,8 @@ export function getOptimalDrinkAmounts(
     const availableDrinks = allDrinks.filter(drink =>
         areIngredientsAvailable(drink.ingredients.map(ingredientAmount => ingredientAmount.ingredient), availableIngredients));
 
+    console.log(`From ${allDrinks.length} drinks, ${availableDrinks.length} are available`);
+
     // Aggregate alcohol for drinks
     const availableDrinkAmounts: IDrinkAmount[] = [];
     availableDrinks.forEach((drink) => {
@@ -38,7 +40,7 @@ export function getOptimalDrinkAmounts(
     const optimal = combinations.reduce((prev, val) => Math.pow(targetAlcoholMl - val.alcohol, 2) > Math.pow(targetAlcoholMl - prev.alcohol, 2) ? prev : val);
 
     // Debug output
-    console.log(`Evaluated ${combinations.length} combinations:
+    console.log(`Evaluated ${combinations.length} combinations of ${availableDrinks.length} possible drinks:
       Weight > ${weight}kg
       Target > ${promille}%°
       Target > ${targetAlcoholMl}ml alcohol
@@ -58,7 +60,10 @@ function areIngredientsAvailable(
     availableIngredients: IIngredient[]): boolean {
 
     const availableIngredientNames = availableIngredients.map(ingredient => ingredient.name);
-    return checkIngredients.every(ingredient => availableIngredientNames.includes(ingredient.name));
+    const notAvailable = checkIngredients.reduce((count, ingredient) => count - +availableIngredientNames.includes(ingredient.name), checkIngredients.length);
+
+    console.log(`Of ${checkIngredients.length}, ${notAvailable} are not available `);
+    return notAvailable === 0;
 }
 function generatePossibleCombinations(maxDrinks: number, availableDrinkAmounts: IDrinkAmount[]): { alcohol: number, combination: IDrinkAmount[] }[] {
     // Generation-based combinations
