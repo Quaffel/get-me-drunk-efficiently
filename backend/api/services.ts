@@ -1,7 +1,7 @@
-import { IDrinkAmount, IIngredient } from '../../types';
+import { IDrink, IDrinkAmount, IIngredient } from '../../types';
 import { getDrinks, getIngredients } from './data';
 
-const ALCOHOL_GRAM_TO_ML = 8 / 10;
+const ALCOHOL_GRAM_TO_ML = 16 / 10;
 
 export function getAllIngredients(): IIngredient[] {
     return getIngredients();
@@ -20,35 +20,32 @@ export function getOptimalDrinkAmounts(
 
     console.log(`From ${allDrinks.length} drinks, ${availableDrinks.length} are available`);
 
-    // Aggregate alcohol for drinks
-    const availableDrinkAmounts: IDrinkAmount[] = [];
-    availableDrinks.forEach((drink) => {
-        availableDrinkAmounts.push({
-            drink: drink,
-            amount: drink.ingredients.filter(ingredient => ingredient.unit === 'ml').map(ingredient => ingredient.amount).reduce((prev, val) => (+prev) + (+val)),
-            amountAlcohol: drink.ingredients.filter(ingredient => ingredient.unit === 'ml').map(ingredient => ingredient.ingredient.alcohol * ingredient.amount).reduce((prev, val) => (+prev) + (+val))
-        });
-    });
 
     // Approximate target total alcohol in ml based on weight and promille
     const targetAlcoholMl = calculateTargetAlcohol(promille, weight);
 
     // Generate all possible combinations
-    const combinations = generatePossibleCombinations(3, availableDrinkAmounts);
+    // const combinations = generatePossibleCombinations(3, availableDrinkAmounts);
 
     // Select combination closest to target
-    const optimal = combinations.reduce((prev, val) => Math.pow(targetAlcoholMl - val.alcohol, 2) > Math.pow(targetAlcoholMl - prev.alcohol, 2) ? prev : val);
+    // const optimal = combinations.reduce((prev, val) => Math.pow(targetAlcoholMl - val.alcohol, 2) > Math.pow(targetAlcoholMl - prev.alcohol, 2) ? prev : val);
+
+    const optimal = [...getDrinksByMostAlc(targetAlcoholMl, availableDrinks)]
+        .map(drink => ({ drink, amount: 1 }));
+
+    const resultingAlcoholVolume = optimal
+        .reduce((sum, { drink, amount }) => sum + amount * drink.alcoholVolume, 0);
 
     // Debug output
-    console.log(`Evaluated ${combinations.length} combinations of ${availableDrinks.length} possible drinks:
+    console.log(`Evaluated ${0 /* combinations.length */} combinations of ${availableDrinks.length} possible drinks:
       Weight > ${weight}kg
       Target > ${promille}%°
       Target > ${targetAlcoholMl}ml alcohol
-      Found > ${optimal.alcohol}ml alcohol
-        ${optimal.combination.map(drinkAmount => `\n  Drink > ${drinkAmount.drink.name} (${drinkAmount.amount}ml ${drinkAmount.amountAlcohol * 100 / drinkAmount.amount}%vol)`)}
+      Found > ${resultingAlcoholVolume}ml alcohol
+        ${optimal.map(({ drink, amount }) => `\n  Drink > ${amount}x ${drink.name} (${drink.alcoholVolume}%vol per Drink)`)}
     `);
 
-    return optimal.combination;
+    return optimal;
 }
 
 function calculateTargetAlcohol(targetPromille: number, weightKg: number): number {
@@ -65,7 +62,25 @@ function areIngredientsAvailable(
     console.log(`Of ${checkIngredients.length}, ${notAvailable} are not available `);
     return notAvailable === 0;
 }
-function generatePossibleCombinations(maxDrinks: number, availableDrinkAmounts: IDrinkAmount[]): { alcohol: number, combination: IDrinkAmount[] }[] {
+
+
+function* getDrinksByMostAlc(targetAlcVolume: number, drinks: IDrink[]): Generator<IDrink> {
+  let sumAlcoholVolume = 0;
+  for(const drink of drinks) {
+    console.log(`Checking ${drink.name} with ${drink.alcoholVolume}ml alc, trying to reach ${targetAlcVolume}ml having ${sumAlcoholVolume}ml`);
+    if(Math.random() > 0.8) continue; // skip some drinks to get a bit of variation
+    if(sumAlcoholVolume + drink.alcoholVolume! > targetAlcVolume) continue; // gets the person more dizzy than wanted, skip
+    yield drink;
+    sumAlcoholVolume += drink.alcoholVolume!;
+  }
+
+  if(sumAlcoholVolume < targetAlcVolume) {
+     // not quite reached, do we get closer if we add the last one?
+  } 
+   
+}
+
+/* function generatePossibleCombinations(maxDrinks: number, availableDrinkAmounts: IDrinkAmount[]): { alcohol: number, combination: IDrinkAmount[] }[] {
     // Generation-based combinations
     const allCombinations: { alcohol: number, combination: IDrinkAmount[] }[][] = [
         [{ alcohol: 0, combination: [] }] // Initial starting value representing "drink nothing"
@@ -86,4 +101,4 @@ function generatePossibleCombinations(maxDrinks: number, availableDrinkAmounts: 
     }
 
     return allCombinations.flat();
-}
+} */

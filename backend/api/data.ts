@@ -10,7 +10,7 @@ let cachedDrinks: IDrink[] = [];
 let cachedIngredients: IIngredient[] = [];
 let cachedAlcohol: { [category: string]: number } = {};
 
-/** Get cached Drinks */
+/** Get cached Drinks, most alcoholVolume first */
 export function getDrinks(): IDrink[] {
     return cachedDrinks;
 }
@@ -203,6 +203,8 @@ export async function fetchDrinks(): Promise<IDrink[]> {
         request.end();
     }).then(drinks => {
 
+        drinks.sort((a, b) => (b.alcoholVolume ?? 0) - (a.alcoholVolume ?? 0));
+
         // Cache drinks
         cachedDrinks = drinks;
 
@@ -258,7 +260,8 @@ async function parseWikidataResult(sparqlResult: string): Promise<IDrink[]> {
             drinks[el.cocktail.value] = {
                 name: el.cocktailLabel.value,
                 image: el.imageUrl?.value,
-                ingredients: []
+                ingredients: [],
+                alcoholVolume: 0,
             }
         }
 
@@ -277,6 +280,9 @@ async function parseWikidataResult(sparqlResult: string): Promise<IDrink[]> {
             amount: amount.val,
             unit: amount.unit
         });
+
+        drinks[el.cocktail.value]!.alcoholVolume += amount.val * (el.alcohol?.value ?? 0) / 100;
+        console.log(`Increased alcohol volume of ${el.cocktail.value} to ${drinks[el.cocktail.value]!.alcoholVolume}`);
     });
 
     return Object.values(drinks);
