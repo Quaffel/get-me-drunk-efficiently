@@ -34,7 +34,7 @@ export async function fetchDrinks(): Promise<IDrink[]> {
     prefix bd: <http://www.bigdata.com/rdf#>
     prefix wikibase: <http://wikiba.se/ontology#>
 
-    SELECT DISTINCT ?cocktail ?cocktailLabel ?ingredientLabel ?offCategory ?alcohol ?ingredientAmount ?ingredientUnitLabel
+    SELECT DISTINCT ?cocktail ?imageUrl ?cocktailLabel ?ingredientLabel ?offCategory ?alcohol ?ingredientAmount ?ingredientUnitLabel
     WHERE {
     # Retrieves all entities that are at least one of the following:
     # - an instance of "cocktail"
@@ -46,6 +46,9 @@ export async function fetchDrinks(): Promise<IDrink[]> {
     FILTER NOT EXISTS {
         ?cocktail wdt:P31 wd:Q16889133.
     }
+
+    # Retrieve the cocktail's image if available
+    OPTIONAL { ?cocktail wdt:P18 ?imageUrl. }
 
     # Queries the English label explictly to exclude entities that don't have a proper English label.
     # Using SERVICE wikibase:label would expose the entity's identifier if no label is present.
@@ -189,6 +192,7 @@ export async function fetchDrinks(): Promise<IDrink[]> {
                 // Debug
                 const returnTime = Date.now();
                 console.log(`Wikidata query ended after ${returnTime - requestTime}ms`);
+                // console.log(`Wikidata responded with`, body);
 
                 resolve(await parseWikidataResult(body));
             });
@@ -221,7 +225,8 @@ async function parseWikidataResult(sparqlResult: string): Promise<IDrink[]> {
     type sparqlValue<T> = {
         type: 'uri' | 'literal';
         value: T;
-    }
+    };
+
     const cocktailTable = data.results.bindings as {
         cocktail: sparqlValue<string>;
         cocktailLabel: sparqlValue<string>;
@@ -230,6 +235,7 @@ async function parseWikidataResult(sparqlResult: string): Promise<IDrink[]> {
         ingredientAmount?: sparqlValue<number>;
         ingredientUnitLabel?: sparqlValue<string>;
         offCategory?: sparqlValue<string>;
+        imageUrl?: sparqlValue<string>;
     }[];
 
     // Fetch alcohol for all categorys
@@ -251,6 +257,7 @@ async function parseWikidataResult(sparqlResult: string): Promise<IDrink[]> {
         if (!drinks[el.cocktail.value]) {
             drinks[el.cocktail.value] = {
                 name: el.cocktailLabel.value,
+                image: el.imageUrl?.value,
                 ingredients: []
             }
         }
