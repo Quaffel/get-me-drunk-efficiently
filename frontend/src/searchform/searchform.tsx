@@ -7,26 +7,13 @@ import { useTipsySelector } from '../tipsyselector/tipsyselector';
 
 const INGREDIENT_STORE = "get-me-drunk-fridge";
 
-const DEFAULT_INGREDIENTS = [
-    "carbonated water",
-    "coffee",
-    "cola",
-    "crushed ice",
-    "cow's milk",
-    "drinking water",
-    "ice",
-    "sugar",
-    "milk",
-    "water",
-];
-
 function SearchForm({
     submit
 }: {
     submit(query: { weight: number, ingredients: IIngredient[], promille: number }): void
 }) {
     const [weight, setWeight] = React.useState(70);
-    const [ingredients, setIngredients] = React.useState<IIngredient[]>([]);
+    const [ingredients, setIngredients] = React.useState<IIngredient[] | null>(null);
     const [tipsySelectorEl, promille] = useTipsySelector({ rangeOptions: { min: .3, max: 2 } });
 
     // If the ingredients were loaded before the user started adding some, 
@@ -36,25 +23,24 @@ function SearchForm({
             const { ingredients } = await loadAllIngredients;
             const storedIngredients = JSON.parse(localStorage.getItem(INGREDIENT_STORE) || "[]");
 
-            const resultIngredients = ingredients.filter(it => 
-                DEFAULT_INGREDIENTS.includes(it.name) ||
-                storedIngredients.includes(it.name)
-            );
+            console.log("loadingIngredients, stored", storedIngredients);
+            const resultIngredients = ingredients.filter(it => storedIngredients.includes(it.name));
 
-            setIngredients(prev => prev.length ? prev : resultIngredients); 
+            setIngredients(prev => prev !== null ? prev : resultIngredients); 
         })();
        
     }, []);
 
     React.useEffect(() => {
-        if(ingredients.length)
+        console.log("store ingredients", ingredients)
+        if(ingredients !== null)
             localStorage.setItem(INGREDIENT_STORE, JSON.stringify(ingredients.map(it => it.name)));
     }, [ingredients]);
     
     return (
         <>
             <div className="segment">
-                <IngredientList ingredients={ingredients} setIngredients={setIngredients} />
+                {ingredients !== null && <IngredientList ingredients={ingredients} setIngredients={setIngredients} />}
             </div>
             <div className="segment">
                 <label htmlFor="weightInput" className="searchform-label">How much do you weight?</label>
@@ -67,7 +53,7 @@ function SearchForm({
             <div className="segment">
                 {tipsySelectorEl}
             </div>
-            <button className="searchform-submit" onClick={() => submit({ weight, ingredients, promille })}>Drinks &rarr;</button>
+            <button className="searchform-submit" onClick={() => { if(ingredients !== null) submit({ weight, ingredients, promille })}}>Drinks &rarr;</button>
 
         </>
     );
