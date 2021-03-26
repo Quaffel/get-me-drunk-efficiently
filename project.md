@@ -1,5 +1,5 @@
 
-# Einleitung und Ziele {#section-introduction-and-goals}
+# Einleitung und Ziele
 Get me drunk efficiently stellt einen Service zur Verfügung, welcher mittels Zutatenliste Vorschläge für Cocktails bietet, um einen gewünschten Promille-Wert zu erreichen.
 
 ## Aufgabenstellung
