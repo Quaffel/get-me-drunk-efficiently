@@ -67,6 +67,7 @@ Im Rahmen der Vorlesung „Moderne Softwarearchitekuren“ wurde die Aufgabe ges
 Der User bekommt Cocktail-Vorschläge vom System anhand seiner Anagaben wie:
 * Zutaten
 * Zu erreichende Promille
+* Körpergewicht
 
 ### Wiki Data (API)
 Initiale Abfrage der Cocktailliste mit Zutaten und Beschreibung beim starten des Systems. Hier liegen alle Daten zu den Cocktails, welche dem User vorgeschlagen werden.
