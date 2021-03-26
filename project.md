@@ -29,7 +29,7 @@ Im Rahmen der Vorlesung „Moderne Softwarearchitekuren“ wurde die Aufgabe ges
 -----------------------|---------------------------|----------------------------
 | Ralf Klemmer         | -                         | Domain Drivern Development
 | Lena Fischer         | -                         | c
-| Johannes Pardoviki   | -                         | c
+| Johannes Pardovicki   | -                         | c
 | Niklas Radomski      | -                         | c
 | Jonas Wilms          | -                         | c
 | Nico Haefele         | -                         | c
