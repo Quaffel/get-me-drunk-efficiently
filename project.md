@@ -14,7 +14,7 @@ Im Rahmen der Vorlesung „Moderne Softwarearchitekuren“ wurde die Aufgabe ges
 
 * Schnelle Antwortzeiten
 
-    * Eine Anfrgae soll bei einen stabilen Internetverbindung nicht länger als 2h dauern.
+    * Eine Anfrgae soll bei einen stabilen Internetverbindung nicht länger als 2 sekunden dauern.
 
 * Abwechslungsreicher Cocktail-Mix
 
