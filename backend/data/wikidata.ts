@@ -202,8 +202,8 @@ function fetchDrinkData(): Promise<WikidataCocktail[]> {
 
 function toDrinksAndIngredients(cocktails: WikidataCocktail[]): { drinks: IDrink[], ingredients: IIngredient[] } {
         // As fetching drinks with ingredients increases cardinality, we need to regroup the results by drink
-        const drinks: { [id: string]: IDrink } = {};
-        const ingredients: { [id: string]: IIngredient } = {};
+        const drinks = new Map<string, IDrink>();
+        const ingredients = new Map<string, IIngredient>();
 
         for(let { cocktail, cocktailLabel, alcohol, imageUrl, ingredientAmount, ingredientLabel, ingredientUnitLabel, offCategory } of cocktails) {
             if (!ingredientLabel || !ingredientAmount || !ingredientUnitLabel) 
@@ -213,25 +213,27 @@ function toDrinksAndIngredients(cocktails: WikidataCocktail[]): { drinks: IDrink
             if(amount.val <= 0) 
                 continue;
 
-            let drink = drinks[cocktail.value];
+            let drink = drinks.get(cocktail.value);
 
             if(!drink) {
-                drink = drinks[cocktail.value] = {
+                drink = {
                     name: cocktailLabel.value,
                     image: imageUrl?.value,
                     ingredients: [],
                     alcoholVolume: 0
                 };
+                drinks.set(cocktail.value, drink);
             }
 
-            let ingredient = ingredients[ ingredientLabel.value ];
+            let ingredient = ingredients.get(ingredientLabel.value);
 
             if(!ingredient) {
-                ingredient = ingredients[ ingredientLabel.value ] = {
+                ingredient = {
                     name: ingredientLabel.value,
                     category: offCategory?.value,
                     alcohol: alcohol ? alcohol.value / 100 : 0
                 };
+                ingredients.set(ingredientLabel.value, ingredient);
             }
 
              // Add IngredientAmount
@@ -243,11 +245,11 @@ function toDrinksAndIngredients(cocktails: WikidataCocktail[]): { drinks: IDrink
         
         }
 
-        console.log(`Wikidata fetched ${drinks.length} drinks with ${ingredients.length} unique ingredients`);
+        console.log(`Wikidata fetched ${drinks.size} drinks with ${ingredients.size} unique ingredients`);
     
         return { 
-            drinks: Object.values(drinks),
-            ingredients: Object.values(ingredients),
+            drinks: [...drinks.values()],
+            ingredients: [...ingredients.values()],
         };
 }
 
