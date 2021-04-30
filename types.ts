@@ -1,5 +1,6 @@
 export interface IIngredient {
     name: string;
+    category?: string;
     alcohol: number;
 }
 
