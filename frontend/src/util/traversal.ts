@@ -1,4 +1,3 @@
-import assert from 'assert';
 import NodeType from './node';
 
 export namespace SimpleTraversal {
@@ -32,50 +31,66 @@ export namespace SimpleTraversal {
 }
 
 export namespace PayloadTraversal {
-    export type VisitorResult<T> = [
-        childrenPolicy: 'visit' | 'count-no-visit' | 'no-count-no-visit' | 'abort',
-        payload: T
-    ];
+    export type PayloadPolicy = 'keep-payload' | 'discard-payload';
+    export type ChildrenPolicy = 'visit-children' | 'evaluate-children' | 'ignore-children' | 'abort';
+
+    export type VisitorResult = { payload: PayloadPolicy, children: ChildrenPolicy };
     export interface Visitor<T> {
-        visitNode(node: Node, payload: T): VisitorResult<T>;
+        visitNode(node: Node, previousPayload: T, ownPayload: T): VisitorResult;
         enterNode?(node: Node, payloadOnEnter: T): void;
         exitNode?(node: Node, payloadOnEnter: T, payloadOnExit: T): void;
     }
 
-    export function traverse<T>(root: Node, visitor: Visitor<T>, rootPayload: T): T {
-        let traversalStack: Array<{ payloadOnEnter: T, reportTraversal: boolean }> = [];
-        let currentPayload = rootPayload;
+    export function traverse<T>(
+        root: Node,
+        payloadMapper: (node: Node, previousPayload: T) => T,
+        visitor: Visitor<T>,
+        initialPayload: T
+    ): T {
+        let currentPayload = initialPayload;
+
+        type TraversalFrame = { payloadOnEnter: T, policy: Exclude<ChildrenPolicy, 'ignore-children' | 'abort'> };
+        let currentTraversalFrame: TraversalFrame = {
+            payloadOnEnter: currentPayload,
+            policy: 'visit-children'
+        };
+        let traversalStack: Array<TraversalFrame> = [currentTraversalFrame];
 
         SimpleTraversal.traverse(root, {
             visitNode(node) {
-                const [policy, payload] = visitor.visitNode(node, currentPayload);
-                currentPayload = payload;
+                const nodePayload = payloadMapper(node, currentPayload);
 
-                if (policy === 'abort') {
+                const policy: VisitorResult = currentTraversalFrame.policy === 'visit-children' 
+                    ? visitor.visitNode(node, currentPayload, nodePayload)
+                    : { payload: 'keep-payload', children: 'evaluate-children' };
+
+                if (policy.payload === 'keep-payload') {
+                    currentPayload = nodePayload;
+                }
+
+                if (policy.children === 'abort') {
                     return 'abort';
                 }
-                if (policy === 'no-count-no-visit') {
+                if (policy.children === 'ignore-children') {
                     return 'no-visit';
                 }
 
-                assert(policy === 'visit' || policy === 'count-no-visit', "unreachable");
-                traversalStack.push({ 
-                    payloadOnEnter: payload,
-                    reportTraversal: policy === 'visit'
+                traversalStack.push({
+                    payloadOnEnter: nodePayload,
+                    policy: policy.children
                 });
-
                 return 'visit';
             },
             enterNode(node) {
-                const top = traversalStack[traversalStack.length - 1];
-                if (top.reportTraversal) {
+                currentTraversalFrame = traversalStack[traversalStack.length - 1];
+                if (currentTraversalFrame.policy === 'visit-children') {
                     visitor.enterNode?.(node, currentPayload);
                 }
             },
             exitNode(node) {
-                const top = traversalStack.splice(-1, 1)[0]; // Remove stack's top element
-                if (top.reportTraversal){ 
-                    visitor.exitNode?.(node, top.payloadOnEnter, currentPayload);
+                currentTraversalFrame = traversalStack.splice(-1, 1)[0]; // Remove stack's top element
+                if (currentTraversalFrame.policy === 'visit-children') {
+                    visitor.exitNode?.(node, currentTraversalFrame.payloadOnEnter, currentPayload);
                 }
             }
         });
@@ -93,26 +108,27 @@ export namespace IndexTraversal {
     }
 
     export function traverse(root: Node, visitor: Visitor, rootIndex: number = 0): number {
-        return PayloadTraversal.traverse(root, {
-            visitNode(node, currentIndex) {
-                let length = 0;
-                if (NodeType.isTextNode(node)) {
-                    length = (node as Text).textContent?.length ?? 0;
-                }
-                
-                const policy = visitor.visitNode(node, currentIndex, length);
-                if (policy === 'abort') {
-                    return ['abort', currentIndex];
-                }
+        return PayloadTraversal.traverse(
+            root,
+            (node, previous) => previous + (NodeType.isTextNode(node) ? (node as Text).textContent!!.length : 0),
+            {
+                visitNode(node, currentIndex, indexWithSelf) {
+                    const length = indexWithSelf - currentIndex;
+                    const policy = visitor.visitNode(node, currentIndex, length);
+                    if (policy === 'abort') {
+                        return { payload: 'discard-payload', children: 'abort' };
+                    }
 
-                return [policy === 'visit' ? 'visit' : 'count-no-visit', currentIndex + length];
-            }, 
-            enterNode(node, indexOnEnter) {
-                visitor.enterNode?.(node, indexOnEnter);
-            },
-            exitNode(node, indexOnEnter, indexOnExit) {
-                visitor.exitNode?.(node, indexOnEnter, indexOnExit);
-            }
-        }, rootIndex);
-    } 
+                    return policy === 'visit'
+                        ? { payload: 'keep-payload', children: 'visit-children' } 
+                        : { payload: 'keep-payload', children: 'evaluate-children' };
+                },
+                enterNode(node, indexOnEnter) {
+                    visitor.enterNode?.(node, indexOnEnter);
+                },
+                exitNode(node, indexOnEnter, indexOnExit) {
+                    visitor.exitNode?.(node, indexOnEnter, indexOnExit);
+                }
+            }, rootIndex);
+    }
 }
