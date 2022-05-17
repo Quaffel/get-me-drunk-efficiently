@@ -1,9 +1,9 @@
 import React, { FormEventHandler } from 'react';
-import { resolveCurrentSelection, SelectionData, SingleSelection } from '../util/selection';
+import { createRange, resolveCurrentSelection, SelectionData, SingleSelection } from '../util/selection';
 import { IndexTraversal } from '../util/traversal';
-import './SearchBar.css'
+import './Searchbar.css'
 
-export function SearchBar({
+export function Searchbar({
     inlineHint,
     querySuggestions
 }: {
@@ -20,7 +20,7 @@ export function SearchBar({
         visible: false
      });
 
-    const selectionListener = function(event: React.SyntheticEvent<HTMLDivElement>) {
+    const selectHandler = function(event: React.SyntheticEvent<HTMLDivElement>) {
         const root = containerRef.current!!;
         const selection = resolveCurrentSelection(root);
         
@@ -52,7 +52,6 @@ export function SearchBar({
             return;
         }
 
-        console.log(selection.index, totalLength);
         let visible = selection.index === totalLength - (suggestion.visible ? suggestion.value.length : 0);
         if (visible !== suggestion.visible) {
             setSuggestion(previous => ({ 
@@ -67,28 +66,47 @@ export function SearchBar({
         };
     }
 
-    const changeListener = function(event: React.KeyboardEvent<HTMLDivElement>) {
-        if (previousSelectionRef.current?.atEnd ?? false) {
-            switch (event.key) {
-                case "ArrowRight":
-                    break;
-                case "Delete":
-                    event.preventDefault();
-                    return;
-                default:
-                    break;
-            }
+    const changeHandler = function(event: React.KeyboardEvent<HTMLDivElement>) {
+        const windowSelection = window.getSelection();
+        const currentSelection = previousSelectionRef.current;
+        if (!currentSelection || !windowSelection) {
+            return;
         }
+
+        if (event.key === "Delete" && currentSelection.atEnd) {
+            event.preventDefault();
+            return;
+        }
+
+        if (event.key === "ArrowRight" && suggestion.visible) {
+            const node = currentSelection.selection.node;
+            node.textContent += suggestion.value;
+
+            windowSelection.removeAllRanges();
+            windowSelection.addRange(createRange({
+                node,
+                offset: node.textContent!!.length
+            }));
+
+            setSuggestion(prev => ({ value: prev.value, visible: false }));
+        }
+
         console.log(event.key);
+        console.log(containerRef.current!!.textContent);
+    }
+
+    const unfocusHandler = function(event: React.FocusEvent<HTMLDivElement>) {
+        setSuggestion(prev => ({ value: prev.value, visible: false }));
     }
 
     // Maybe use "portals" to avoid contentEditable warnings?
     // https://www.reddit.com/r/reactjs/comments/2wnge4/how_to_disable_react_warnings/
 
-    return <div aria-label="Search" ref={containerRef} onKeyDown={changeListener} onSelect={selectionListener}
+    return <div aria-label="Search" ref={containerRef} 
+        onBlur={unfocusHandler} onKeyDown={changeHandler} onSelect={selectHandler}
         className='searchbar' contentEditable={true}>
-        test
-        {suggestion.visible && <span contentEditable={false}>{suggestion.value}</span>}
+        bla
+        {suggestion.visible && <span className="searchbar-suggestion" contentEditable={false}>{suggestion.value}</span>}
         {/* <span>Prolog</span>
         Content
 

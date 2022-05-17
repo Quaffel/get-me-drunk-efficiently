@@ -2,12 +2,18 @@
     width: 100%;
     padding: 2em;
 
+    margin-bottom: 2em;
+
     box-sizing: border-box;
 
     border: solid;
 }
 
-.inlinehint {
+.searchbar-suggestion {
+    color: darkgray;
+}
+
+.searchbar-inlinehint {
     user-select: all;
     background-color: organe;
     padding-inline: .5em;

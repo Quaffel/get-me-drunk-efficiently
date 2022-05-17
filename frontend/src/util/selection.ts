@@ -74,7 +74,7 @@ export function resolveCurrentSelection(root: Node): SelectionData | null {
                 startNodeIndex = index;
             }
             if (node === endNode) {
-                if (startNodeIndex == -1) throw new Error("Encountered end container before start container");
+                if (startNodeIndex === -1) throw new Error("Encountered end container before start container");
                 endNodeIndex = index;
                 return 'abort';
             }
@@ -93,7 +93,7 @@ export function resolveCurrentSelection(root: Node): SelectionData | null {
 
 export function createRange(
     startInfo: { node: Node, offset: number }, 
-    endInfo: { node: Node, offset: number } | undefined
+    endInfo?: { node: Node, offset: number }
 ): Range {
     if (!endInfo) {
         endInfo = startInfo;
@@ -104,4 +104,13 @@ export function createRange(
     range.setEnd(endInfo.node, endInfo.offset);
 
     return range;
+}
+
+export function setSelection(range: Range | null) {
+    const selection = window.getSelection()!!;
+    selection.removeAllRanges();
+
+    if (range) {
+        selection.addRange(range);
+    }
 }

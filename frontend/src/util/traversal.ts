@@ -1,15 +1,16 @@
 import NodeType from './node';
 
+export type ChildrenMapper<N> = (node: N) => Array<N>
+const DomChildrenMapper = (node: Node) => Array.from(node.childNodes);
+
 export namespace SimpleTraversal {
     export type VisitorResult = 'visit' | 'no-visit' | 'abort';
-
-    export interface Visitor {
-        visitNode(node: Node): VisitorResult;
-        enterNode(node: Node): void;
-        exitNode(node: Node): void;
+    export interface Visitor<N> {
+        visitNode(node: N): VisitorResult;
+        enterNode(node: N): void;
+        exitNode(node: N): void;
     }
-
-    export function traverse(root: Node, visitor: Visitor): boolean {
+    export function traverse<N = Node>(root: N, visitor: Visitor<N>, childrenMapper: ChildrenMapper<N>): boolean {
         const result = visitor.visitNode(root);
         if (result === 'no-visit') {
             return false;
@@ -19,14 +20,18 @@ export namespace SimpleTraversal {
         }
 
         visitor.enterNode(root);
-        for (let child of Array.from(root.childNodes)) {
-            const childResult = traverse(child, visitor);
+        for (let child of childrenMapper(root)) {
+            const childResult = traverse(child, visitor, childrenMapper);
             if (childResult === true) {
                 return true;
             }
         }
         visitor.exitNode(root);
         return false;
+    }
+
+    export function traverseDom(root: Node, visitor: Visitor<Node>): boolean {
+        return traverse(root, visitor, DomChildrenMapper);
     }
 }
 
@@ -35,32 +40,35 @@ export namespace PayloadTraversal {
     export type ChildrenPolicy = 'visit-children' | 'evaluate-children' | 'ignore-children' | 'abort';
 
     export type VisitorResult = { payload: PayloadPolicy, children: ChildrenPolicy };
-    export interface Visitor<T> {
-        visitNode(node: Node, previousPayload: T, ownPayload: T): VisitorResult;
-        enterNode?(node: Node, payloadOnEnter: T): void;
-        exitNode?(node: Node, payloadOnEnter: T, payloadOnExit: T): void;
+    export interface Visitor<N, T> {
+        visitNode(node: N, previousPayload: T, ownPayload: T): VisitorResult;
+        enterNode?(node: N, payloadOnEnter: T): void;
+        exitNode?(node: N, payloadOnEnter: T, payloadOnExit: T): void;
     }
 
-    export function traverse<T>(
-        root: Node,
-        payloadMapper: (node: Node, previousPayload: T) => T,
-        visitor: Visitor<T>,
-        initialPayload: T
-    ): T {
+    export function traverse<N, P>(
+        root: N,
+        visitor: Visitor<N, P>,
+        mapperInfo: {
+            payload: (node: N, previousPayload: P) => P,
+            children: ChildrenMapper<N>
+        },
+        initialPayload: P
+    ): P {
         let currentPayload = initialPayload;
 
-        type TraversalFrame = { payloadOnEnter: T, policy: Exclude<ChildrenPolicy, 'ignore-children' | 'abort'> };
+        type TraversalFrame = { payloadOnEnter: P, policy: Exclude<ChildrenPolicy, 'ignore-children' | 'abort'> };
         let currentTraversalFrame: TraversalFrame = {
             payloadOnEnter: currentPayload,
             policy: 'visit-children'
         };
         let traversalStack: Array<TraversalFrame> = [currentTraversalFrame];
 
-        SimpleTraversal.traverse(root, {
+        SimpleTraversal.traverse<N>(root, {
             visitNode(node) {
-                const nodePayload = payloadMapper(node, currentPayload);
+                const nodePayload = mapperInfo.payload(node, currentPayload);
 
-                const policy: VisitorResult = currentTraversalFrame.policy === 'visit-children' 
+                const policy: VisitorResult = currentTraversalFrame.policy === 'visit-children'
                     ? visitor.visitNode(node, currentPayload, nodePayload)
                     : { payload: 'keep-payload', children: 'evaluate-children' };
 
@@ -93,9 +101,21 @@ export namespace PayloadTraversal {
                     visitor.exitNode?.(node, currentTraversalFrame.payloadOnEnter, currentPayload);
                 }
             }
-        });
+        }, mapperInfo.children);
 
         return currentPayload;
+    }
+
+    export function traverseDom<P>(
+        root: Node,
+        visitor: Visitor<Node, P>,
+        payloadMapper: (node: Node, previousPayload: P) => P,
+        initialPayload: P
+    ): P {
+        return traverse<Node, P>(root, visitor, {
+            payload: payloadMapper,
+            children: DomChildrenMapper
+        }, initialPayload);
     }
 }
 
@@ -108,9 +128,8 @@ export namespace IndexTraversal {
     }
 
     export function traverse(root: Node, visitor: Visitor, rootIndex: number = 0): number {
-        return PayloadTraversal.traverse(
+        return PayloadTraversal.traverseDom(
             root,
-            (node, previous) => previous + (NodeType.isTextNode(node) ? (node as Text).textContent!!.length : 0),
             {
                 visitNode(node, currentIndex, indexWithSelf) {
                     const length = indexWithSelf - currentIndex;
@@ -120,7 +139,7 @@ export namespace IndexTraversal {
                     }
 
                     return policy === 'visit'
-                        ? { payload: 'keep-payload', children: 'visit-children' } 
+                        ? { payload: 'keep-payload', children: 'visit-children' }
                         : { payload: 'keep-payload', children: 'evaluate-children' };
                 },
                 enterNode(node, indexOnEnter) {
@@ -129,6 +148,9 @@ export namespace IndexTraversal {
                 exitNode(node, indexOnEnter, indexOnExit) {
                     visitor.exitNode?.(node, indexOnEnter, indexOnExit);
                 }
-            }, rootIndex);
+            },
+            (node, previous) => previous + (NodeType.isTextNode(node) ? (node as Text).textContent!!.length : 0),
+            rootIndex
+        );
     }
 }
