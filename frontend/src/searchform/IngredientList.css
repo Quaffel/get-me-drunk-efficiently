@@ -30,6 +30,30 @@
     width: 90%;
 }
 
+.ingredient-completion {
+    color: var(--secondary-shadow);
+}
+
+.ingredient-input {
+    all: unset;
+    background-color: var(--primary-opacity);
+    width: 90%;
+    flex-grow: 1;
+    font-size: 20px;
+    padding: 5px 10px 5px 10px;
+    margin-top: 5px;
+    border-radius: 1em;
+    box-shadow: inset 0 0 20px var(--secondary);
+    display: flex;
+}
+
+.ingredient-input-value {
+    all: unset;
+    flex-grow: 0;
+    height: 25px;
+    
+}
+
 .ingredient-label {
     flex-grow: 1;
 }

@@ -30,17 +30,6 @@
     display: flex;
 }
 
-.searchform-input-value {
-    all: unset;
-    flex-grow: 0;
-    height: 25px;
-    
-}
-
-.searchform-completion {
-    color: var(--secondary-shadow);
-}
-
 .suffix {
     font-size: 20px;
     padding: 5px 10px 5px 10px;
