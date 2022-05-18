@@ -19,8 +19,8 @@
   --text-font: 'Quicksand', sans-serif;
 }
 
-html {
-  min-height: 100%;
+html, body, #root {
+  height: 100%;
 }
 
 body {

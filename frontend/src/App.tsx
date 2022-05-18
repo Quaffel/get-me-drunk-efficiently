@@ -16,7 +16,7 @@ function App() {
     try {
       const result = await API.getMeDrunk(query);
       setState({ result: result.drinks });
-    } catch (error) {
+    } catch (error: any) {
       setState({ error: error.message });
     }
   }
