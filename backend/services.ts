@@ -1,18 +1,18 @@
-import { IDrink, IDrinkAmount, IIngredient } from '../../types';
-import { getDrinks, getIngredients } from './data';
+import { IDrink, IDrinkAmount, IIngredient } from '../types';
+import { getDrinks, getIngredients } from './data/';
 
 const ALCOHOL_GRAM_TO_ML = 16 / 10;
 
-export function getAllIngredients(): IIngredient[] {
+export async function getAllIngredients(): Promise<IIngredient[]> {
     return getIngredients();
 }
 
-export function getOptimalDrinkAmounts(
+export async function getOptimalDrinkAmounts(
     availableIngredients: IIngredient[],
     promille: number,
     weight: number
-): IDrinkAmount[] {
-    const allDrinks = getDrinks();
+): Promise<IDrinkAmount[]> {
+    const allDrinks = await getDrinks();
 
     // Filter drinks with missing ingredients
     let availableDrinks: IDrink[] = []; 

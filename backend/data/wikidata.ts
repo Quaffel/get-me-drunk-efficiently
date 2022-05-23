@@ -1,34 +1,13 @@
-import { IDrink, IIngredient } from '../../types';
 import { IncomingMessage } from 'http';
 import https from 'https';
 
-const endpointHost = 'query.wikidata.org';
-const endpointPath = 'sparql';
-const userAgent = 'GetMeDrunkEfficiently/0.0 (https://github.com/Quaffel/get-me-drunk-efficiently)';
+import { IDrink, IIngredient } from "../../types";
+import { getAlcohol } from './openfoodfacts';
+import { cached, normalize, once, USER_AGENT } from './util';
 
-let cachedDrinks: IDrink[] = [];
-let cachedIngredients: IIngredient[] = [];
-let cachedAlcohol: { [category: string]: number } = {};
+const URL = 'https://query.wikidata.org/sparql';
 
-/** Get cached Drinks, most alcoholVolume first */
-export function getDrinks(): IDrink[] {
-    return cachedDrinks;
-}
-
-/** Get cached Ingredients */
-export function getIngredients(): IIngredient[] {
-    return cachedIngredients;
-}
-
-/** Get cached Alcohol */
-export function getAlcohol(): { [category: string]: number } {
-    return cachedAlcohol;
-}
-
-
-/** Fetch drinks from wikidata and cache response */
-export async function fetchDrinks(): Promise<IDrink[]> {
-    const query = `
+const DRINK_QUERY = `
     prefix wdt: <http://www.wikidata.org/prop/direct/>
     prefix wd: <http://www.wikidata.org/entity/>
     prefix bd: <http://www.bigdata.com/rdf#>
@@ -171,16 +150,32 @@ export async function fetchDrinks(): Promise<IDrink[]> {
     ORDER BY ASC(?cocktailLabel)
     `;
 
-    const url = `https://${endpointHost}/${endpointPath}`;
-    const postData = `query=${encodeURIComponent(query)}`;
+type SparqlValue<T> = {
+    type: 'uri' | 'literal';
+    value: T;
+};
 
-    return new Promise<IDrink[]>((resolve, reject) => {
+interface WikidataCocktail {
+    cocktail: SparqlValue<string>;
+    cocktailLabel: SparqlValue<string>;
+    alcohol?: SparqlValue<number>;
+    ingredientLabel?: SparqlValue<string>;
+    ingredientAmount?: SparqlValue<number>;
+    ingredientUnitLabel?: SparqlValue<string>;
+    offCategory?: SparqlValue<string>;
+    imageUrl?: SparqlValue<string>;
+};
+
+function fetchDrinkData(): Promise<WikidataCocktail[]> {
+    const postData = `query=${encodeURIComponent(DRINK_QUERY)}`;
+
+    return new Promise<WikidataCocktail[]>((resolve, reject) => {
         const requestTime = Date.now();
-        const request = https.request(url, {
+        const request = https.request(URL, {
             method: 'POST',
             headers: {
                 'Accept': 'application/sparql-results+json',
-                'User-Agent': userAgent,
+                'User-Agent': USER_AGENT,
                 'Content-Type': 'application/x-www-form-urlencoded',
                 'Content-Length': Buffer.byteLength(postData)
             }
@@ -194,179 +189,101 @@ export async function fetchDrinks(): Promise<IDrink[]> {
                 console.log(`Wikidata query ended after ${returnTime - requestTime}ms`);
                 // console.log(`Wikidata responded with`, body);
 
-                resolve(await parseWikidataResult(body));
+                const result = JSON.parse(body);
+                resolve(result.results.bindings);
             });
         });
 
         // Write request body
         request.write(postData);
         request.end();
-    }).then(drinks => {
-
-        drinks.sort((a, b) => (b.alcoholVolume ?? 0) - (a.alcoholVolume ?? 0));
-
-        // Cache drinks
-        cachedDrinks = drinks;
-
-        // Cache ingredients;
-        cachedIngredients = [];
-        drinks.map(drink => drink.ingredients.map(ingredientAmount => ingredientAmount.ingredient)).flat().forEach(ingredient => {
-            if (!cachedIngredients.map(el => el.name).includes(ingredient.name))
-                cachedIngredients.push(ingredient);
-        });
-
-        return drinks;
     });
 }
 
-// Parses SPARQL cocktail results to drink array
-async function parseWikidataResult(sparqlResult: string): Promise<IDrink[]> {
-    const data = JSON.parse(sparqlResult);
+function toDrinksAndIngredients(cocktails: WikidataCocktail[]): { drinks: IDrink[], ingredients: IIngredient[] } {
+        // As fetching drinks with ingredients increases cardinality, we need to regroup the results by drink
+        const drinks = new Map<string, IDrink>();
+        const ingredients = new Map<string, IIngredient>();
 
-    // Type results
-    type sparqlValue<T> = {
-        type: 'uri' | 'literal';
-        value: T;
-    };
+        for(let { cocktail, cocktailLabel, alcohol, imageUrl, ingredientAmount, ingredientLabel, ingredientUnitLabel, offCategory } of cocktails) {
+            if (!ingredientLabel || !ingredientAmount || !ingredientUnitLabel) 
+                continue;
 
-    const cocktailTable = data.results.bindings as {
-        cocktail: sparqlValue<string>;
-        cocktailLabel: sparqlValue<string>;
-        alcohol?: sparqlValue<number>;
-        ingredientLabel?: sparqlValue<string>;
-        ingredientAmount?: sparqlValue<number>;
-        ingredientUnitLabel?: sparqlValue<string>;
-        offCategory?: sparqlValue<string>;
-        imageUrl?: sparqlValue<string>;
-    }[];
+            const amount = normalize(ingredientAmount.value, ingredientUnitLabel.value);
+            if(amount.val <= 0) 
+                continue;
 
-    // Fetch alcohol for all categorys
-    const uniqueCategorys = cocktailTable.map(el => el.offCategory?.value).filter((val, i, self) => val && self.indexOf(val) === i) as string[];
-    await Promise.all(uniqueCategorys.map(category => fetchAlcohol(category)));
+            let drink = drinks.get(cocktail.value);
 
-
-    // Aggregate drink information
-    const drinks: { [id: string]: IDrink } = {};
-    cocktailTable.forEach(el => {
-        // Do not add IngredientAmount if empty
-        if (!el.ingredientLabel || !el.ingredientAmount || !el.ingredientUnitLabel) return;
-
-        // Do not add IngredientAmount if amount is 0ml or less
-        const amount = normalize(el.ingredientAmount.value, el.ingredientUnitLabel.value);
-        if(amount.val <= 0) return;
-
-        // Drink does not exists
-        if (!drinks[el.cocktail.value]) {
-            drinks[el.cocktail.value] = {
-                name: el.cocktailLabel.value,
-                image: el.imageUrl?.value,
-                ingredients: [],
-                alcoholVolume: 0,
+            if(!drink) {
+                drink = {
+                    name: cocktailLabel.value,
+                    image: imageUrl?.value,
+                    ingredients: [],
+                    alcoholVolume: 0
+                };
+                drinks.set(cocktail.value, drink);
             }
-        }
 
-        // Try to aggregate Openfoodfacts-data if alcohol not set
-        if(!el.alcohol && el.offCategory) el.alcohol = { 
-            type: 'literal',
-            value: getAlcohol()[el.offCategory.value] || 0 
-        };
+            let ingredient = ingredients.get(ingredientLabel.value);
 
-        // Add IngredientAmount
-        drinks[el.cocktail.value].ingredients.push({
-            ingredient: {
-                name: el.ingredientLabel.value,
-                alcohol: el.alcohol ? el.alcohol.value / 100 : 0
-            },
-            amount: amount.val,
-            unit: amount.unit
-        });
-
-        drinks[el.cocktail.value]!.alcoholVolume += amount.val * (el.alcohol?.value ?? 0) / 100;
-        console.log(`Increased alcohol volume of ${el.cocktail.value} to ${drinks[el.cocktail.value]!.alcoholVolume}`);
-    });
-
-    return Object.values(drinks);
-}
-
-/** Fetch alcohol for given category from openfoodfacts and cache response */
-export async function fetchAlcohol(category: string): Promise<number> {
-    return new Promise<number>((resolve, reject) => {
-        const url = `https://world.openfoodfacts.org/category/${encodeURIComponent(category)}.json?page_size=50`;
-        const requestTime = Date.now();
-        const request = https.get(url, {
-            headers: {
-                'Accept': 'application/json',
-                'User-Agent': userAgent
+            if(!ingredient) {
+                ingredient = {
+                    name: ingredientLabel.value,
+                    category: offCategory?.value,
+                    alcohol: alcohol ? alcohol.value / 100 : 0
+                };
+                ingredients.set(ingredientLabel.value, ingredient);
             }
-        }, async (res: IncomingMessage) => {
-            if(res.statusCode === 301) {
-                // Handle redirects
-                const newCategory = res.headers.location?.replace('/category/', '').replace('.json', '') as string;
 
-                console.log(`OpenFoodFacts redirected ${category} -> ${newCategory}`);
-                return resolve(await fetchAlcohol(newCategory));
-            }
-            let body: string = '';
-            res.on('error', (err) => reject(err));
-            res.on('data', (chunk: string) => body += chunk);
-            res.on('end', () => {
-                // Debug
-                const returnTime = Date.now();
-
-                const avgAlcohol = Math.round(parseOffResult(body) * 10) / 10;
-                resolve(avgAlcohol);
-                console.log(`OpenFoodFacts query for '${category}' (avg. ${avgAlcohol} %vol) ended after ${returnTime - requestTime}ms`);
+             // Add IngredientAmount
+             drink.ingredients.push({
+                ingredient,
+                amount: amount.val,
+                unit: amount.unit
             });
-        });
-    }).then((alcohol) => {
-        // Cache Alcohol for category
-        cachedAlcohol[category] = alcohol;
-        return alcohol;
-    });
-}
-
-interface offResult {
-    count: number;
-    products: {
-        no_nutrition_data: '' | 'on',
-        nutriments: {
-            alcohol?: number;
-        }
-    }[]
-}
-
-function parseOffResult(result: string): number {
-    const { products, count } = (JSON.parse(result) as offResult);
-
-    // Get all alcohol values from products
-    const productsAlcohol = products.filter(el => el.no_nutrition_data === '').map(product => product.nutriments.alcohol).filter(val => val) as number[];
-
-    // For global categories such as "beverages", building an avergae value is useless
-    if(count > 1000)
-        return 0;
         
-    // Return average
-    return productsAlcohol.reduce((sum, current) => sum + (+current), 0) / productsAlcohol.length;
+        }
+
+        console.log(`Wikidata fetched ${drinks.size} drinks with ${ingredients.size} unique ingredients`);
+    
+        return { 
+            drinks: [...drinks.values()],
+            ingredients: [...ingredients.values()],
+        };
 }
 
-function normalize(ingredientAmount: number, unit: string): { val: number, unit: string } {
-    // Convert every known unit to ml
-    switch(unit) {
-        case 'fluid ounce': return { val: ingredientAmount * 29.5735, unit: 'ml' };
-        case 'centilitre': return { val: ingredientAmount * 10, unit: 'ml' };
-        case 'splash': return { val: ingredientAmount * 3.7, unit: 'ml' };
-        case 'dash': return { val: ingredientAmount * 0.9, unit: 'ml' };
-        case 'millilitre': return { val: ingredientAmount, unit: 'ml' };
-        case 'teaspoon': return { val: ingredientAmount * 3.7, unit: 'ml' };
-        case 'bar spoon': return { val: ingredientAmount * 2.5, unit: 'ml' };
-        case 'ounce': return { val: ingredientAmount * 29.5735, unit: 'ml' };
-        case 'Stemware': return { val: ingredientAmount * 150, unit: 'ml' };
-        case 'tablespoon': return { val: ingredientAmount * 11.1, unit: 'ml' };
-        case 'drop': return { val: ingredientAmount * 0.05, unit: 'ml' };
-        case 'teaspoon (metric)': return { val: ingredientAmount * 3.7, unit: 'ml' };
-        case 'pinch': return { val: ingredientAmount * 0.31, unit: 'ml' };
-        case '1': return { val: ingredientAmount * 29.5735, unit: 'ml' };
+async function enrichAlcohol(ingredient: IIngredient) {
+    if(ingredient.alcohol) return;
+    if(!ingredient.category) return;
 
-        default: return { val: ingredientAmount, unit: unit };
-    }
+    ingredient.alcohol = await getAlcohol(ingredient.category);
+
+    console.log(`Wikidata enriched alcohol of ${ingredient.name} (category: ${ingredient.category}) to ${ingredient.alcohol}`);
 }
+
+function accumulateTotal(drink: IDrink) {
+    drink.alcoholVolume = drink.ingredients.reduce(
+        (sum, { amount, ingredient: { alcohol }}) => sum + amount * alcohol / 100, 
+        0
+    );
+
+    console.log(`Wikidata accumulated alcohol of ${drink.name} to ${drink.alcoholVolume}%vol`);
+}
+
+const getDrinksAndIngredients = once(async () => {
+    const result = await fetchDrinkData();
+    const { drinks, ingredients } = toDrinksAndIngredients(result);
+
+    // then fetch additional alcohol data from OpenFoodFacts
+    await Promise.all(ingredients.map(enrichAlcohol));
+    
+    // as all data is now present, accumulate totals
+    drinks.forEach(accumulateTotal);
+
+    return { drinks, ingredients };
+});
+
+
+export const getDrinks =      () => getDrinksAndIngredients().then(it => it.drinks);
+export const getIngredients = () => getDrinksAndIngredients().then(it => it.ingredients);
