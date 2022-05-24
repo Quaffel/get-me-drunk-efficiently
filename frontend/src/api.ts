@@ -1,7 +1,7 @@
-import { IRequest, IResponse, IResponseIngredients } from "../../types";
+import { ITipsinessQuery, ITipsinessResponse } from "../../queries";
 
-export const getMeDrunk = (request: IRequest): Promise<IResponse> =>
-    fetch("/api/get-me-drunk", {
+export const getMeDrunk = (request: ITipsinessQuery): Promise<ITipsinessResponse> =>
+    fetch("/api/tipsiness", {
         method: "POST",
         headers: {
             'Content-Type': 'application/json'
@@ -9,5 +9,5 @@ export const getMeDrunk = (request: IRequest): Promise<IResponse> =>
         body: JSON.stringify(request)
     }).then(it => it.json());
 
-export const getIngredients = (): Promise<IResponseIngredients> =>
+export const getIngredients = (): Promise<ITipsinessResponse> =>
     fetch("/api/ingredients").then(it => it.json());
