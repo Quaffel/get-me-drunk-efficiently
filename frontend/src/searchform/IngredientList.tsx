@@ -5,7 +5,7 @@ import { IIngredient } from "../../../types";
 
 import * as API from "../api";
 
-export const loadAllIngredients = API.getIngredients();
+export const loadAllIngredients = API.queryIngredients();
 
 
 const normalize = (str: string) =>

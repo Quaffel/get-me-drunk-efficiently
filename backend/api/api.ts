@@ -1,16 +1,20 @@
 import express, { Router, Request, Response } from 'express';
-import { IAllIngredientsResponse, isTipsinessQuery, ITipsinessQuery, ITipsinessResponse } from '../../queries';
-import { getAllIngredients, getOptimalDrinkAmounts } from '../services';
+import {
+    IAllIngredientsResponse, IDrinkResponse, isDrinkQuery,
+    isTipsinessQuery, ITipsinessResponse
+} from '../../queries';
+import { getAllIngredients, getOptimalDrinkAmounts, searchDrinks } from '../services';
 
 const router: Router = Router();
 
 router.post('/tipsiness', express.json(), async (req: Request, res: Response) => {
     const query = req.body;
-    if(!isTipsinessQuery(query)) return res.status(400).end();
+    if (!isTipsinessQuery(query)) return res.status(400).end();
 
-    const optimalDrinks = getOptimalDrinkAmounts(query.ingredients, query.promille, query.weight);
-    
-    const result: ITipsinessResponse = { drinks: optimalDrinks };
+    const result: ITipsinessResponse = {
+        drinks: await getOptimalDrinkAmounts(query.ingredients, query.promille, query.weight)
+    };
+
     return res.json(result);
 });
 
@@ -19,11 +23,26 @@ router.get('/ingredients', async (_: Request, res: Response) => {
     return res.json(result);
 });
 
-router.post('/drinks', async (req: Request, res: Response) => {
+router.post('/drinks', express.json(), async (req: Request, res: Response) => {
     const query = req.body;
-    if (!isTipsinessQuery(query)) return res.status(400).end(); 
+    if (!isDrinkQuery(query)) return res.status(400).end();
 
-    // TODO: Contact corresponding service.
+    let eligibleDrinks;
+    try {
+        eligibleDrinks = await searchDrinks({
+            cocktailName: query.drinkName && query.drinkName.length > 0 ? query.drinkName : undefined,
+            maxAlcoholConcentration: query.maxAlcoholConcentration,
+            ingredients: query.ingredients && query.ingredients.length > 0 ? query.ingredients : undefined
+        });
+    } catch (e: unknown) {
+        return res.status(400).end();
+    }
+
+    const result: IDrinkResponse = {
+        drinks: eligibleDrinks
+    };
+
+    return res.json(result);
 });
 
 export { router };

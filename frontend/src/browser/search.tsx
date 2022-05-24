@@ -1,11 +1,13 @@
 import React from 'react';
 import { IDrink, IIngredient } from '../../../types';
+import { queryDrinks } from '../api';
 
 import './Browser.css';
 
 interface QueryData {
-    searchValue: string,
-    filterIngredients?: Array<IIngredient>
+    drinkName?: string,
+    maxAlcoholConcentration?: number,
+    ingredients?: Array<IIngredient>,
 }
 
 interface QueryBase<T extends string> {
@@ -38,7 +40,7 @@ export const useSearch = () => React.useContext(SearchContext);
 export function SearchProvider({ children }: React.PropsWithChildren<{}>): JSX.Element {
     const [query, setQuery] = React.useState<Query>({
         state: 'pending',
-        data: { searchValue: "" },
+        data: {},
         lastCompletedQuery: null
     });
 
@@ -59,7 +61,17 @@ export function SearchProvider({ children }: React.PropsWithChildren<{}>): JSX.E
         // If a new query is registered (due to user interaction), the previous effect's timeout is cleared.
         // Edge cases in which the timeout is not cleared in time are permissible.
         const timeout = setTimeout(async () => {
-            console.log("Submitted query: ", query);
+            const drinks = (await queryDrinks({
+                drinkName: query.data.drinkName,
+                maxAlcoholConcentration: query.data.maxAlcoholConcentration,
+                ingredients: query.data.ingredients?.map(it => it.name)
+            })).drinks;
+
+            setQuery({
+                state: 'completed',
+                data: query.data,
+                results: drinks
+            });
         }, 1000);
         return () => clearTimeout(timeout);
     }, [query])

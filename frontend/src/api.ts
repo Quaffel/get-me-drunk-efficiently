@@ -1,6 +1,9 @@
-import { ITipsinessQuery, ITipsinessResponse } from "../../queries";
+import {
+    IAllIngredientsResponse, IDrinkQuery, IDrinkResponse,
+    ITipsinessQuery, ITipsinessResponse
+} from "../../queries";
 
-export const getMeDrunk = (request: ITipsinessQuery): Promise<ITipsinessResponse> =>
+export const queryTipsinessRecommendation = (request: ITipsinessQuery): Promise<ITipsinessResponse> =>
     fetch("/api/tipsiness", {
         method: "POST",
         headers: {
@@ -9,5 +12,14 @@ export const getMeDrunk = (request: ITipsinessQuery): Promise<ITipsinessResponse
         body: JSON.stringify(request)
     }).then(it => it.json());
 
-export const getIngredients = (): Promise<ITipsinessResponse> =>
+export const queryIngredients = (): Promise<IAllIngredientsResponse> =>
     fetch("/api/ingredients").then(it => it.json());
+
+export const queryDrinks = (request: IDrinkQuery): Promise<IDrinkResponse> =>
+    fetch("/api/drinks", {
+        method: "POST",
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(request)
+    }).then(it => it.json());

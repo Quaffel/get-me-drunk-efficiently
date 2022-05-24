@@ -4,7 +4,7 @@ import { IIngredient, IDrinkAmount, IDrink } from './types';
 // Querying a set of cocktails that needs to be consumed for reaching a certain 
 // level of drunkenness.  Used by "get-me-drunk-efficiently"'s core feature.
 export interface ITipsinessQuery {
-    ingredients: IIngredient[];
+    ingredients: Array<IIngredient["name"]>;
     promille: number;
     weight: number;
 }
@@ -35,8 +35,9 @@ export function isAllIngredientsQuery(obj: any): obj is IAllIngredientsQuery {
 // Cocktails request:
 // Querying cocktails based on filter criteria.
 export interface IDrinkQuery {
-    searchValue: string;
-    maxAlcoholConcentration: number | null;
+    drinkName?: string;
+    maxAlcoholConcentration?: number;
+    ingredients?: Array<IIngredient["name"]>;
 }
 
 export interface IDrinkResponse {
@@ -44,6 +45,5 @@ export interface IDrinkResponse {
 }
 
 export function isDrinkQuery(obj: any): obj is IDrinkQuery {
-    return obj && obj.searchValue && typeof obj.searchValue === 'string'
-        && obj.maxAlcoholConcentration && typeof obj.maxAlcoholConcentration === 'number';
+    return !!obj;
 }

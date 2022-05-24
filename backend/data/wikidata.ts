@@ -193,70 +193,103 @@ async function fetchDrinkData(): Promise<WikidataCocktail[]> {
 }
 
 function toDrinksAndIngredients(cocktails: WikidataCocktail[]): { drinks: IDrink[], ingredients: IIngredient[] } {
-        // As fetching drinks with ingredients increases cardinality, we need to regroup the results by drink
-        const drinks = new Map<string, IDrink>();
-        const ingredients = new Map<string, IIngredient>();
+    // As fetching drinks with ingredients increases cardinality, we need to regroup the results by drink
+    const drinks = new Map<string, IDrink>();
+    const ingredients = new Map<string, IIngredient>();
 
-        for(let { cocktail, cocktailLabel, alcohol, imageUrl, ingredientAmount, ingredientLabel, ingredientUnitLabel, offCategory } of cocktails) {
-            if (!ingredientLabel || !ingredientAmount || !ingredientUnitLabel) 
-                continue;
+    let discardedEntries = 0;
+    let discardedDrinks = new Set<string>();
 
-            const amount = normalize(ingredientAmount.value, ingredientUnitLabel.value);
-            if(amount.val <= 0) 
-                continue;
-
-            let drink = drinks.get(cocktail.value);
-
-            if(!drink) {
-                drink = {
-                    name: cocktailLabel.value,
-                    image: imageUrl?.value,
-                    ingredients: [],
-                    alcoholVolume: 0
-                };
-                drinks.set(cocktail.value, drink);
-            }
-
-            let ingredient = ingredients.get(ingredientLabel.value);
-
-            if(!ingredient) {
-                ingredient = {
-                    name: ingredientLabel.value,
-                    category: offCategory?.value,
-                    alcohol: alcohol ? alcohol.value / 100 : 0
-                };
-                ingredients.set(ingredientLabel.value, ingredient);
-            }
-
-             // Add IngredientAmount
-             drink.ingredients.push({
-                ingredient,
-                amount: amount.val,
-                unit: amount.unit
-            });
-        
+    for (let {
+        cocktail, cocktailLabel, imageUrl,
+        alcohol, ingredientAmount, ingredientLabel, ingredientUnitLabel, offCategory
+    } of cocktails) {
+        function discardResult(reason: string) {
+            console.error(`Warning: Discard ingredient "${ingredientLabel?.value}" `
+                + `of cocktail "${cocktailLabel.value}" ` 
+                + `with the unit "${ingredientUnitLabel?.value}". `
+                + `Reason: ${reason}`);
+            
+            discardedEntries++;
+            discardedDrinks.add(cocktailLabel.value); // Risk potential "undefined" entry.
         }
 
-        console.log(`Wikidata fetched ${drinks.size} drinks with ${ingredients.size} unique ingredients`);
-    
-        return { 
-            drinks: [...drinks.values()],
-            ingredients: [...ingredients.values()],
-        };
+        if (!ingredientLabel || !ingredientAmount || !ingredientUnitLabel) {
+            // Reached whenever a row lacks entries.  Possible scenarios are:
+            // - ingredient lacks a quantity
+            //   - it does naturally not have any quantity (garnish, glasses, ice cubes)
+            //   - data is incomplete
+            // - cocktail does not have any ingredient whatsoever
+            //   - Wikidata entry represents a family of drinks
+            //   - data is incomplete 
+            discardResult("Unknown ingredient label, amount, or unit (possibly legitimate)");
+            continue;
+        }
+
+        const amount = normalize(ingredientAmount.value, ingredientUnitLabel.value);
+        if (amount === null) {
+            discardResult("Couldn't normalize amount");
+            continue;
+        }
+        if (amount.val <= 0) {
+            discardResult("Negative or zeroed out amount");
+            continue;
+        }
+
+        let drink = drinks.get(cocktail.value);
+
+        if (!drink) {
+            drink = {
+                name: cocktailLabel.value,
+                image: imageUrl?.value,
+                ingredients: [],
+                alcoholVolume: 0
+            };
+            drinks.set(cocktail.value, drink);
+        }
+
+        let ingredient = ingredients.get(ingredientLabel.value);
+
+        if (!ingredient) {
+            ingredient = {
+                name: ingredientLabel.value,
+                category: offCategory?.value,
+                alcoholConcentration: alcohol ? alcohol.value / 100 : 0
+            };
+            ingredients.set(ingredientLabel.value, ingredient);
+        }
+
+        // Add IngredientAmount
+        drink.ingredients.push({
+            ingredient,
+            amount: amount.val,
+            unit: amount.unit
+        });
+
+    }
+
+    console.log(`Wikidata: Fetched ${drinks.size} drinks with ${ingredients.size} unique ingredients`);
+    console.log(`Wikidata: Discarded ${discardedEntries} entries of ${discardedDrinks.size} drinks `
+        + `because of data quality issues`);
+
+    return {
+        drinks: [...drinks.values()],
+        ingredients: [...ingredients.values()],
+    };
 }
 
 async function enrichAlcohol(ingredient: IIngredient) {
-    if(ingredient.alcohol) return;
+    if(ingredient.alcoholConcentration) return;
     if(!ingredient.category) return;
 
-    ingredient.alcohol = await getAlcohol(ingredient.category);
+    ingredient.alcoholConcentration = await getAlcohol(ingredient.category);
 
-    console.log(`Wikidata enriched alcohol of ${ingredient.name} (category: ${ingredient.category}) to ${ingredient.alcohol}`);
+    console.log(`Wikidata enriched alcohol of ${ingredient.name} (category: ${ingredient.category}) to ${ingredient.alcoholConcentration}`);
 }
 
 function accumulateTotal(drink: IDrink) {
     drink.alcoholVolume = drink.ingredients.reduce(
-        (sum, { amount, ingredient: { alcohol }}) => sum + amount * alcohol / 100, 
+        (sum, { amount, ingredient: { alcoholConcentration: alcohol }}) => sum + amount * alcohol / 100, 
         0
     );
 

@@ -1,34 +1,35 @@
 import React from 'react';
 import { DrinkGrid } from '../drinks/DrinkGrid';
-import { Query, SearchProvider, useSearch } from './search';
+import { Query, useSearch } from './search';
 
 import './Browser.css';
-import SearchForm from '../searchform/searchform';
 import { IIngredient } from '../../../types';
 import { FilterElement, ValueSlider } from './BrowserFilter';
-import { IngredientList, loadAllIngredients } from '../searchform/IngredientList';
-import * as API from '../api';
+import { IngredientList } from '../searchform/IngredientList';
 
 export function Browser(): JSX.Element {
     const { submitQuery } = useSearch();
 
     const [searchValue, setSearchValue] = React.useState<string>("");
-
-    const [permille, setPermille] = React.useState<number>(0.8);
+    const [maxAlcoholConcentration, setMaxAlcoholConcentration] = React.useState<number>(0.2);
     const [ingredients, setIngredients] = React.useState<Array<IIngredient>>([]);
 
     React.useEffect(() => {
         submitQuery({
-            searchValue,
-            filterIngredients: ingredients
+            drinkName: searchValue,
+            maxAlcoholConcentration,
+            ingredients
         });
-    }, [searchValue, permille, ingredients]);
+    }, [searchValue, maxAlcoholConcentration, ingredients]);
 
     return <div className="browser">
         <BrowserSearch searchValue={searchValue} setSearchValue={setSearchValue} />
         <BrowserResult />
-        <BrowserFilterPane permille={permille} setPermille={setPermille}
-            ingredients={ingredients} setIngredients={setIngredients} />
+        <BrowserFilterPane 
+            maxAlcoholConcentration={maxAlcoholConcentration} 
+            onMaxAlcoholConcentrationUpdate={setMaxAlcoholConcentration}
+            ingredients={ingredients} 
+            onIngredientsUpdate={setIngredients} />
     </div>;
 }
 
@@ -67,21 +68,23 @@ export function BrowserSearch({
 }
 
 export function BrowserFilterPane({
-    permille, setPermille,
-    ingredients, setIngredients
+    maxAlcoholConcentration,
+    onMaxAlcoholConcentrationUpdate,
+    ingredients,
+    onIngredientsUpdate
 }: {
-    permille: number,
-    setPermille: (value: number) => void,
+    maxAlcoholConcentration: number,
+    onMaxAlcoholConcentrationUpdate: (value: number) => void,
     ingredients: Array<IIngredient>,
-    setIngredients: (value: Array<IIngredient>) => void
+    onIngredientsUpdate: (value: Array<IIngredient>) => void
 }): JSX.Element {
-
     return <div className="browser-filter">
-        <FilterElement label="Permille">
-            <ValueSlider min={0} max={2} precision={.05} value={permille} onValueUpdate={setPermille} />
+        <FilterElement label="Concentration of alcohol">
+            <ValueSlider min={0} max={1} precision={.05} 
+                value={maxAlcoholConcentration} onValueUpdate={onMaxAlcoholConcentrationUpdate} />
         </FilterElement>
         <FilterElement label="Ingredients">
-            <IngredientList ingredients={ingredients} setIngredients={setIngredients} />
+            <IngredientList ingredients={ingredients} setIngredients={onIngredientsUpdate} />
         </FilterElement>
     </div>;
 }

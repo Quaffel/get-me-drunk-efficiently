@@ -14,7 +14,12 @@ function App() {
     setState({ loading: true });
 
     try {
-      const result = await API.getMeDrunk(query);
+      // TODO: Replace Array<Ingredient> with Array<Ingredient["name"]> in originating component
+      const result = await API.queryTipsinessRecommendation({
+        ingredients: query.ingredients.map(it => it.name),
+        weight: query.weight,
+        promille: query.promille
+      });
       setState({ result: result.drinks });
     } catch (error: any) {
       setState({ error: error.message });

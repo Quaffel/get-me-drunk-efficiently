@@ -1,4 +1,4 @@
-import React, { ChangeEvent, FormEventHandler } from 'react';
+import React from 'react';
 
 import './BrowserFilter.css';
 
