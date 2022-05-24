@@ -1,0 +1,77 @@
+prefix wdt: <http://www.wikidata.org/prop/direct/>
+prefix wd: <http://www.wikidata.org/entity/>
+prefix bd: <http://www.bigdata.com/rdf#>
+prefix wikibase: <http://wikiba.se/ontology#>
+
+SELECT DISTINCT ?cocktail ?cocktailLabel ?cocktailImageUrl ?ingredientLabel ?offCategory ?alcohol ?ingredientAmount ?ingredientUnitLabel
+WHERE {
+  # Retrieves all entities that are at least one of the following:
+  # - an instance of "cocktail"
+  # - a subclass of "cocktail"
+  # - an instance of a subclass of "cocktail"
+  ?cocktail wdt:P31?/wdt:P279* wd:Q134768.
+
+  # Removes all classes (instances of Q16889133 ("class")).
+  FILTER NOT EXISTS {
+    ?cocktail wdt:P31 wd:Q16889133.
+  }
+
+  # Retrieves the cocktail's image if available.
+  OPTIONAL { ?cocktail wdt:P18 ?cocktailImageUrl. }
+  
+  # Queries the English label explictly to exclude entities that don't have a proper English label.
+  # Using SERVICE wikibase:label would expose the entity's identifier if no label is present.
+  ?cocktail rdfs:label ?cocktailLabel.
+  FILTER (lang(?cocktailLabel) = "en").
+  
+  # Retrieves a cocktail's ingredients based on the P186 ("made from material") property.
+  # The identifiers for the Open Food Facts API are retrieved as well, if available.
+  OPTIONAL {
+    ?cocktail p:P186 ?ingredientStatement.    
+    ?ingredientStatement ps:P186 ?ingredient.
+
+    # Queries the ingredient's English label explicitly.
+    ?ingredient rdfs:label ?ingredientLabel.
+    FILTER (lang(?ingredientLabel) = "en").
+
+    # Queries for quantitiy information
+    OPTIONAL {
+      ?ingredientStatement pqv:P1114/wikibase:quantityAmount ?ingredientAmount;
+                           pqv:P1114/wikibase:quantityUnit ?ingredientUnit.
+      
+      # Queries the ingredient's English label explicitly.
+      ?ingredientUnit rdfs:label ?ingredientUnitLabel.
+      FILTER (lang(?ingredientUnitLabel) = "en").
+    }
+
+    # Excludes ingredients that only apply to a certain part (P518 ("applies to part"); mostly Q81727 ("Stemware")) 
+    # or are only used for serving the cocktail, but aren't part of it (P366 ("use"); mostly Q59541 ("garnish")).
+    FILTER NOT EXISTS { ?ingredientStatement pq:P518 ?_part. }
+    FILTER NOT EXISTS { ?ingredientStatement pq:P366 ?_use. }
+    
+    
+    # If the ingredient is a subclass and/or an instance of another class, those classes are
+    # queried as well if the entity itself doesn't hold sufficient information.
+    # Querying those classes upfront might seem more efficient at first glance, but leads
+    # to severe performance issues in practice (due to a data dependency that is hard to optimize).
+    # That's why the respective classes and superclasses are queried several times.
+
+    # Queries the ingredient's alcohol concentration by volume (percentage points), if available.
+    OPTIONAL { ?ingredient wdt:P2665 ?ingredientAlcohol. }
+    OPTIONAL { ?ingredient wdt:P31/wdt:P2665 ?ingredientClassAlcohol. }
+    OPTIONAL { ?ingredient wdt:P279/wdt:P2665 ?ingredientSuperclassAlcohol. }
+    BIND(COALESCE(?ingredientAlcohol, ?ingredientClassAlcohol, ?ingredientSuperclassAlcohol) AS ?alcohol).
+    
+    # Retrieves the ingredient's Open Food Facts category, if available.
+    OPTIONAL { ?ingredient wdt:P1821 ?ingredientOffCategory. }
+    OPTIONAL { ?ingredient wdt:P31/wdt:P1821 ?ingredientClassOffCategory. }
+    OPTIONAL { ?ingredient wdt:P279/wdt:P1821 ?ingredientSuperclassOffCategory. }
+    BIND(COALESCE(?ingredientOffCategory, ?ingredientClassOffCategory, ?ingredientSuperclassOffCategory) AS ?offCategory).
+
+    # Removes all Open Food Facts category identifiers that include a colon (':').
+    # Colons are only part of regionalized identifiers.  As the application queries the 
+    # world-wide database (world.openfoodfacts.org), however, only the universal identifiers are required.
+    FILTER (!CONTAINS(IF(BOUND(?offCategory), ?offCategory, ""), ":"))
+  }
+}
+ORDER BY ASC(?cocktailLabel)
