@@ -1,9 +1,8 @@
-import { IncomingMessage } from 'http';
-import https from 'https';
+import { fetch } from './fetch';
 
 import { IDrink, IIngredient } from "../../types";
 import { getAlcohol } from './openfoodfacts';
-import { cached, normalize, once, USER_AGENT } from './util';
+import { normalize, once } from './util';
 
 const URL = 'https://query.wikidata.org/sparql';
 
@@ -166,38 +165,30 @@ interface WikidataCocktail {
     imageUrl?: SparqlValue<string>;
 };
 
-function fetchDrinkData(): Promise<WikidataCocktail[]> {
+async function fetchDrinkData(): Promise<WikidataCocktail[]> {
     const postData = `query=${encodeURIComponent(DRINK_QUERY)}`;
 
-    return new Promise<WikidataCocktail[]>((resolve, reject) => {
-        const requestTime = Date.now();
-        const request = https.request(URL, {
-            method: 'POST',
-            headers: {
-                'Accept': 'application/sparql-results+json',
-                'User-Agent': USER_AGENT,
-                'Content-Type': 'application/x-www-form-urlencoded',
-                'Content-Length': Buffer.byteLength(postData)
-            }
-        }, (res: IncomingMessage) => {
-            let body: string = '';
-            res.on('error', (err) => reject(err));
-            res.on('data', (chunk: string) => body += chunk);
-            res.on('end', async () => {
-                // Debug
-                const returnTime = Date.now();
-                console.log(`Wikidata query ended after ${returnTime - requestTime}ms`);
-                // console.log(`Wikidata responded with`, body);
-
-                const result = JSON.parse(body);
-                resolve(result.results.bindings);
-            });
-        });
-
-        // Write request body
-        request.write(postData);
-        request.end();
+    const requestTime = Date.now();
+    const result = await fetch<'application/sparql-results+json'>(URL, {
+        method: 'POST',
+        accept: 'application/sparql-results+json',
+        body: {
+            mimeType: 'application/x-www-form-urlencoded',
+            content: postData
+        }
     });
+    const returnTime = Date.now();
+    console.log(`Wikidata query ended after ${returnTime - requestTime}ms`);
+
+    if (result.type === 'error') {
+        throw new Error(result.error);
+    }
+    if (result.type === 'redirect') {
+        throw new Error("Unexpected redirect");
+    }
+
+    const parsedResponse: any = JSON.parse(result.body.content)
+    return parsedResponse.results.bindings;
 }
 
 function toDrinksAndIngredients(cocktails: WikidataCocktail[]): { drinks: IDrink[], ingredients: IIngredient[] } {
