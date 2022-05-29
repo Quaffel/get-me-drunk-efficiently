@@ -263,27 +263,49 @@ function accumulateTotal(drink: IDrink) {
     console.log(`Wikidata accumulated alcohol of ${drink.name} to ${drink.alcoholVolume}%vol`);
 }
 
+// Normalization is the process of transforming one URL of one service of the Wikimedia Foundation to 
+// another URL that points to the same resources.  This is necessary due to a mismatch of URL schemes
+// in different APIs, namely Wikidata-provided data and the information provided by other APIs.  
+// Besides differences in the URL schemes, there are also subtle differences in how 
+// URI component encoding is performed.
+//
+// The images requested from Wikidata (via property P18) follow the scheme
+//   http://commons.wikimedia.org/wiki/Special:FilePath/<image_identifier>
+// All non-latin characters are encoded using the percent sign-based URI encoding scheme.
+// Words are separated by whitespace characters (encoded as '%20').
+// (As a sidenote: The data returned by the Wikidata Query Service violates the URL scheme provided in
+// item P18.  It is unclear why this mismatch occurs, especially because it is properly displayed in
+// the query builder on https://query.wikidata.org/.)
+//
+// The Wikimedia API deals with URLs that follow the scheme
+//   https://commons.wikimedia.org/wiki/<image_identfier>
+// Most non-latin characters are encoded using the percent sign-based URI encoding scheme.  The special characters
+// "$-_.+!*'()," (as per RFC 1738), however, are provided unencoded in the URL.
+// Words are separated by underscore characters.
+//
+// During the conversion from the former scheme to the latter, we do not re-encode the URI.
+// It is expected that any sane fetch API/URL builder will do so once an actual request is performed.
 function normalizeWikimediaUrl(drinkUrl: string): string | null {
     const imageUrl = new URL(drinkUrl);
     const matchInfo = imageUrl.pathname.match(/\/wiki\/Special:FilePath\/([\w\d\-%_]+\.\w{1,3})/);
 
-    if (matchInfo === null) {
-        console.log("Warning: Image URL does not match the expected pattern", imageUrl);
-        return null;
-    }
-
-    return "https://commons.wikimedia.org/wiki/File:" + decodeURIComponent(matchInfo[1]).replace(/ /g, "_");
+    return matchInfo !== null
+        ? "https://commons.wikimedia.org/wiki/File:" + decodeURIComponent(matchInfo[1]).replace(/ /g, "_")
+        : null;
 }
 
 const getDrinksAndIngredients = once(async () => {
     const result = await fetchDrinkData();
     const { drinks, ingredients } = toDrinksAndIngredients(result);
 
-    // then fetch additional alcohol data from OpenFoodFacts
+    // Fetch additional information on alcohol contents from Open Food Facts 
+    // and adjust the ingredients' alcohol property.
     await Promise.all(ingredients.map(enrichAlcohol));
     
-    // as all data is now present, accumulate totals
+    // Accumulate the the drinks' respective total alcohol volume.
     drinks.forEach(accumulateTotal);
+
+    // Normalize the Wikimedia image URLs.  
     drinks.forEach(it => { 
         if (it.image) { 
             const normalizedUrl = normalizeWikimediaUrl(it.image) ;
