@@ -2,9 +2,10 @@ import { fetch } from './fetch';
 
 import { IDrink, IIngredient } from "../../types";
 import { getAlcohol } from './openfoodfacts';
-import { normalize, once } from './util';
+import { NonEmptyArray, normalize, once } from './util';
+import { fetchScalingImageInfo } from './wikimedia-imageinfo';
 
-const URL = 'https://query.wikidata.org/sparql';
+const SERVICE_URL = 'https://query.wikidata.org/sparql';
 
 const DRINK_QUERY = `
     prefix wdt: <http://www.wikidata.org/prop/direct/>
@@ -169,7 +170,7 @@ async function fetchDrinkData(): Promise<WikidataCocktail[]> {
     const postData = `query=${encodeURIComponent(DRINK_QUERY)}`;
 
     const requestTime = Date.now();
-    const result = await fetch<'application/sparql-results+json'>(URL, {
+    const result = await fetch<'application/sparql-results+json'>(SERVICE_URL, {
         method: 'POST',
         accept: 'application/sparql-results+json',
         body: {
@@ -187,7 +188,8 @@ async function fetchDrinkData(): Promise<WikidataCocktail[]> {
         throw new Error("Unexpected redirect");
     }
 
-    const parsedResponse: any = JSON.parse(result.body.content)
+    const parsedResponse: any = JSON.parse(result.body.content);
+    console.log(result.body.content);
     return parsedResponse.results.bindings;
 }
 
@@ -207,6 +209,7 @@ function toDrinksAndIngredients(cocktails: WikidataCocktail[]): { drinks: IDrink
             let drink = drinks.get(cocktail.value);
 
             if(!drink) {
+                console.log(imageUrl?.value);
                 drink = {
                     name: cocktailLabel.value,
                     image: imageUrl?.value,
@@ -262,15 +265,53 @@ function accumulateTotal(drink: IDrink) {
     console.log(`Wikidata accumulated alcohol of ${drink.name} to ${drink.alcoholVolume}%vol`);
 }
 
+function normalizeWikimediaUrl(drinkUrl: string): string | null {
+    const imageUrl = new URL(drinkUrl);
+    const matchInfo = imageUrl.pathname.match(/\/wiki\/Special:FilePath\/([\w\d\-%_]+\.\w{1,3})/);
+
+    if (matchInfo === null) {
+        console.log("Warning: Image URL does not match the expected pattern", imageUrl);
+        return null;
+    }
+
+    return "https://commons.wikimedia.org/wiki/File:" + decodeURIComponent(matchInfo[1]).replace(/ /g, "_");
+}
+
 const getDrinksAndIngredients = once(async () => {
     const result = await fetchDrinkData();
     const { drinks, ingredients } = toDrinksAndIngredients(result);
 
+    const oldDrinkUrls = drinks.map(it => it.image);
+
     // then fetch additional alcohol data from OpenFoodFacts
-    await Promise.all(ingredients.map(enrichAlcohol));
+    // await Promise.all(ingredients.map(enrichAlcohol));
     
     // as all data is now present, accumulate totals
     drinks.forEach(accumulateTotal);
+    drinks.forEach(it => { 
+        if (it.image) { 
+            const normalizedUrl = normalizeWikimediaUrl(it.image) ;
+            if (!normalizedUrl) {
+                console.error(`Warning: Failed to normalize the Wikimedia URL "${it.image}" for drink ${it.name}`);
+                return;
+            }
+
+            it.image = normalizedUrl;
+        }
+    });
+
+    const images = await fetchScalingImageInfo(drinks, { width: 300, height: 300 });
+    for (let [drinkName, imageInfo] of Object.entries(images!)) {
+        const drink = drinks.find(it => it.name === drinkName);
+        if (drink === undefined) {
+            console.error("Warning: Couldn't map the image info back to a drink");
+            continue;
+        }
+
+        drink.image = imageInfo.scaledImage.url;
+    }
+
+    console.log(oldDrinkUrls);
 
     return { drinks, ingredients };
 });
