@@ -1,0 +1,18 @@
+.browser-search {
+    display: flex;
+    grid-area: search;
+
+    justify-content: center;
+    align-items: center;
+
+    flex-grow: 1;
+}
+
+.browser-search-bar {
+    width: 100%;
+    padding: 0.5rem;
+
+    border: none;
+    border-radius: 10px;
+    background-color: none;
+}

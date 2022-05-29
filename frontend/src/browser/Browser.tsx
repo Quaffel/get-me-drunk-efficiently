@@ -2,28 +2,27 @@ import React from 'react';
 import { DrinkGrid } from '../drinks/DrinkGrid';
 import { Query, useSearch } from './search';
 
-import './Browser.css';
 import { IIngredient } from '../../../types';
 import { FilterElement, ValueSlider } from './BrowserFilter';
 import { IngredientList } from '../searchform/IngredientList';
 
+import './Browser.css';
+
 export function Browser(): JSX.Element {
     const { submitQuery } = useSearch();
 
-    const [searchValue, setSearchValue] = React.useState<string>("");
     const [maxAlcoholConcentration, setMaxAlcoholConcentration] = React.useState<number>(0.2);
     const [ingredients, setIngredients] = React.useState<Array<IIngredient>>([]);
 
     React.useEffect(() => {
-        submitQuery({
-            drinkName: searchValue,
+        submitQuery(prev => ({
+            ...prev.data,
             maxAlcoholConcentration,
             ingredients
-        });
-    }, [searchValue, maxAlcoholConcentration, ingredients]);
+        }));
+    }, [maxAlcoholConcentration, ingredients]);
 
     return <div className="browser">
-        <BrowserSearch searchValue={searchValue} setSearchValue={setSearchValue} />
         <BrowserResult />
         <BrowserFilterPane 
             maxAlcoholConcentration={maxAlcoholConcentration} 
@@ -44,27 +43,13 @@ export function BrowserResult(): JSX.Element {
         return <BrowserStatusMessage>Loading</BrowserStatusMessage>;
     }
 
+    console.log("rerendering results");
+    console.log(contentQuery.results);
     return <div className="browser-result"><DrinkGrid drinks={contentQuery.results} /></div>;
 }
 
 function BrowserStatusMessage({ children }: { children: string }): JSX.Element {
     return <div className="browser-result browser-message">{children}</div>;
-}
-
-export function BrowserSearch({
-    searchValue,
-    setSearchValue
-}: {
-    searchValue: string,
-    setSearchValue: (value: string) => void
-}): JSX.Element {
-    function handleChange(event: React.ChangeEvent<HTMLInputElement>) {
-        setSearchValue(event.currentTarget.value);
-    }
-
-    return <div className="browser-search">
-        <input className="browser-search-bar" type="text" value={searchValue} onChange={handleChange} />
-    </div>;
 }
 
 export function BrowserFilterPane({

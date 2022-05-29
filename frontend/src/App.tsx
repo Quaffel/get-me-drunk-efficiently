@@ -32,42 +32,23 @@ function App() {
 
 
   if (state.loading) {
-    return (
-      <Container>
-        <Spinner />
-      </Container>
-    );
+    return (<Spinner />);
   }
 
   if (state.error) {
-    return (
-      <Container>
-        <Banner.Warning title="An error occurred" text={state.error} />
-      </Container>
-    )
+    return (<Banner.Warning title="An error occurred" text={state.error} />);
   }
 
   if (state.pending || !state.result?.length) {
     return (
-      <Container>
+      <>
         {!!state.result && !state.result.length && <Banner.Warning title="No result found" text="Adapt your query" />}
         <SearchForm submit={startRecommendation} />
-      </Container>
+      </>
     )
   }
 
-  return (
-    <Container>
-      <DrinkList drinkAmounts={state.result} goBack={goBack} />
-    </Container>
-  );
-}
-
-function Container({ children }: React.PropsWithChildren<{}>) {
-  return <div className="app">
-    <div className="app-title">Get me drunk <span className="app-title-suffix">efficiently</span></div>
-    {children}
-  </div>
+  return (<DrinkList drinkAmounts={state.result} goBack={goBack} />);
 }
 
 

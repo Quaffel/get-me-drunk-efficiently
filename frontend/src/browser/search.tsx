@@ -31,7 +31,7 @@ export type Query = PendingQuery | LoadingQuery | FailedQuery | CompletedQuery;
 
 interface SearchContextProps {
     readonly query: Query,
-    submitQuery: (query: QueryData) => void
+    submitQuery: (block: (prevQuery: Query) => QueryData) => void
 }
 const SearchContext = React.createContext<SearchContextProps>({} as any);
 
@@ -44,10 +44,10 @@ export function SearchProvider({ children }: React.PropsWithChildren<{}>): JSX.E
         lastCompletedQuery: null
     });
 
-    function submitQuery(newQuery: QueryData) {
+    function submitQuery(block: (prevQuery: Query) => QueryData) {
         setQuery(prev => ({
             state: 'pending',
-            data: newQuery,
+            data: block(prev),
             lastCompletedQuery: prev.state === 'completed' ? prev : prev.lastCompletedQuery
         }));
     }
@@ -72,6 +72,8 @@ export function SearchProvider({ children }: React.PropsWithChildren<{}>): JSX.E
                 data: query.data,
                 results: drinks
             });
+
+            console.log("finished query");
         }, 1000);
         return () => clearTimeout(timeout);
     }, [query])

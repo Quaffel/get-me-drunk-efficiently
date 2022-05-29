@@ -1,16 +1,13 @@
 .browser {
     position: relative;
-    width: 100%;
-    height: 100%;
 
     padding-inline: 2rem;
     box-sizing: border-box;
 
     display: grid;
-    grid-template-columns: 20vw 1fr 1fr;
-    grid-template-rows: 5rem 1fr;
-    grid-template-areas:    "header search search"
-                            "filter result result";
+    grid-template-columns: 20vw 1fr;
+    grid-template-rows: 1fr;
+    grid-template-areas:    "filter result";
 
     column-gap: 2rem;
 
@@ -26,25 +23,6 @@
     display: flex;
     justify-content: center;
     align-items: center;
-}
-
-.browser-search {
-    display: flex;
-    grid-area: search;
-
-    justify-content: center;
-    align-items: center;
-
-    flex-grow: 1;
-    width: 100%;
-}
-
-.browser-search-bar {
-    width: 100%;
-
-    border-radius: 10px;
-    padding: 1rem;
-    background-color: none;
 }
 
 .browser-filter {
