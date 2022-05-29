@@ -27,6 +27,7 @@ interface WikimediaQueryInfo {
     };
 }
 interface WikimediaPageInfo {
+    title: string;
     imageinfo: {
         [index: number]: WikimediaImageInfo
     };
@@ -58,11 +59,11 @@ export async function fetchScalingImageInfo<D extends Array<IDrink>>(
 } | null> {
     type DrinkInfoMapping = { [K in typeof drinks[number]['name']]: ImageInfo };
 
-    const drinksWithImages = drinks.filter(it => !!it);
+    // Only fetch image information for drinks that have 
+    const drinksWithImages = drinks.filter(it => !!it.image);
 
     const fetchTasks: Array<Promise<DrinkInfoMapping>> = [];
     for (let batch of discerpInBatches(drinksWithImages, 50)) {
-        console.log(batch.map(it => it.name));
         fetchTasks.push(fetchScalingImageInfo0(batch, maxDimensions) as Promise<DrinkInfoMapping>);
     }
 
@@ -79,41 +80,68 @@ async function fetchScalingImageInfo0<D extends NonEmptyArray<IDrink>>(
 ): Promise<{
     [K in typeof drinks[number]['name']]: ImageInfo
 } | null> {
+    if (drinks.length > 50) {
+        throw new Error("Drinks array must contain 50 drinks at most");
+    }
 
-    // const imageMapping: Map<string, typeof drinks[number]> = new Map();
-
-    let url = new URL("https://www.wikidata.org/w/api.php");
-    url.searchParams.append("action", "query");
-    url.searchParams.append("format", "json");
-    url.searchParams.append("prop", "imageinfo");
-    url.searchParams.append("iiprop", "url|mime|size");
-    url.searchParams.append("iiurlwidth", maxDimensions.width.toFixed(0));
-    url.searchParams.append("iiurlheight", maxDimensions.height.toFixed(0));
-
-    // Bar-separated list of all Wikimedia image files
-    // e.g.: File:Martini.jpg|File:Vodka.jpg
-    // Wikimedia image URLs are provided in the URL scheme https://commons.wikimedia.org/wiki/<ref>
-    const drinksParamValue = (drinks
-        .map(it => {
-            const imageUrl = new URL(it.image!);
+    function groupDrinksByImage(drinks: D): Map<string, Array<typeof drinks[number]>> {
+        const imageToDrinks: Map<string, Array<typeof drinks[number]>> = new Map();
+        for (let drink of drinks) {
+            // At this point, the Wikimedia (image) URLs are normalized, i.e., in the form 
+            // https://commons.wikimedia.org/wiki/<image_identifier>
+            const imageUrl = new URL(drink.image!);
             const matchInfo = imageUrl.pathname.match(/\/wiki\/(File:.+\.\w{1,3})/);
 
             if (matchInfo === null) {
-                console.log("Warning: in imageinfo: Image URL does not match the expected pattern", it.image!);
-                return null;
+                console.log(`[image-info] Warning: Wikimedia URL ${drink.image} does not match the expected pattern`);
+                continue;
             }
 
-            return decodeURIComponent(matchInfo[1]);
-        })
-        .filter(it => it !== null) as Array<string>)
-        .reduce(
-            (acc, imageUrl) => `${acc}|${imageUrl}`,
-            ""
-        ).slice(1);
-    url.searchParams.append("titles", drinksParamValue);
+            const imageIdentifier = decodeURIComponent(matchInfo[1]);
 
-    console.log("Fetching data from: ", url.toString());
-    const result = await fetch<'application/json'>(url.toString(), {
+            let drinksList = imageToDrinks.get(imageIdentifier);
+            if (drinksList === undefined) {
+                drinksList = [];
+                imageToDrinks.set(imageIdentifier, drinksList);
+            }
+
+            drinksList.push(drink);
+        }
+
+        return imageToDrinks;
+    }
+
+    const imageToDrinks = groupDrinksByImage(drinks);
+    const imageIdentifiers = Array.from(imageToDrinks.keys());
+
+    if (imageIdentifiers.length !== drinks.length) {
+        console.error(`[image-info] Warning: There are ${drinks.length - imageToDrinks.size} cocktails sharing images`);
+    }
+
+    function buildImagedataRequestUrl(imageIdentifier: Array<string>): string {
+        let url = new URL("https://www.wikidata.org/w/api.php");
+        url.searchParams.append("action", "query");
+        url.searchParams.append("format", "json");
+        url.searchParams.append("prop", "imageinfo");
+        url.searchParams.append("iiprop", "url|mime|size");
+        url.searchParams.append("iiurlwidth", maxDimensions.width.toFixed(0));
+        url.searchParams.append("iiurlheight", maxDimensions.height.toFixed(0));
+
+        // Bar-separated list of all Wikimedia image files
+        // e.g.: File:Martini.jpg|File:Vodka.jpg
+        const drinksParamValue = Array.from(imageIdentifier)
+            .reduce(
+                (acc, imageUrl) => `${acc}|${imageUrl}`,
+                ""
+            ).slice(1);
+        url.searchParams.append("titles", drinksParamValue);
+
+        return url.toString();
+    }
+
+    const requestUrl = buildImagedataRequestUrl(imageIdentifiers);
+    console.log(`[image-info] Fetching image data information: ${requestUrl}`);
+    const result = await fetch<'application/json'>(requestUrl, {
         method: 'GET',
         accept: 'application/json'
     });
@@ -126,38 +154,37 @@ async function fetchScalingImageInfo0<D extends NonEmptyArray<IDrink>>(
     }
 
     const parsedResult = JSON.parse(result.body.content) as Partial<WikimediaRootInfo>;
-    const pages = parsedResult?.query?.pages;
 
-    if (!pages) {
+    const indexedSearchResults = parsedResult?.query?.pages;
+    if (!indexedSearchResults) {
         throw new Error("Unexpected result: " + result.body.content);
     }
 
-    if (Object.entries(pages).length !== drinks.filter(it => !!it.image).length) {
-        console.log("Warning: Length mismatch", Object.entries(pages).length, drinks.filter(it => !!it.image).length);
+    const searchResults = Object.values(indexedSearchResults);
+    if (searchResults.length !== imageIdentifiers.length) {
+        console.log(`[image-info] Warning: Search results are lacking ` 
+            + `${imageIdentifiers.length - searchResults.length} items`);
     }
 
     let res: { [K in typeof drinks[number]['name']]: ImageInfo } = {} as any;
-    for (let it of Object.values(pages)) {
-        const page = it as Partial<WikimediaPageInfo>;
+    for (let searchResult of Object.values(indexedSearchResults)) {
+        const page = searchResult as Partial<WikimediaPageInfo>;
+
+        // The 'title' property indicates the file's display name.  As of today, the file's display name is identical
+        // to its actual name, except that spaces are replaced by underscores.  We make use of this property to 
+        // keep the matching logic simple.  If this premise ever breaks, we can still resort to the mapping from 
+        // file names to display names provided by the query's 'normalized'.
+        const imageIdentifier = page.title?.replace(/ /g, "_");
         const imageInfo = page?.imageinfo?.[0];
-
-        if (!imageInfo) {
-            throw new Error("invalid image info entry");
+        if (!imageInfo || !imageIdentifier) {
+            console.error("[image-info] Warning: Invalid/empty/malformed search result entry for "
+                + searchResult.title);
+            continue;
         }
 
-        const descriptionUrl = new URL(imageInfo.descriptionurl);
-        const matchInfo = descriptionUrl.pathname.match(/\/wiki\/File:(.+\.\w{1,3})/);
-
-        if (matchInfo === null) {
-            console.log("Warning: Image URL does not match the expected pattern", descriptionUrl);
-            return null;
-        }
-
-        const decodedDescriptionUrl = "https://commons.wikimedia.org/wiki/File:" + decodeURIComponent(matchInfo[1]);
-
-        const drink = drinks.find(it => it.image === decodedDescriptionUrl) as typeof drinks[number] | undefined;
-        if (!drink) {
-            console.error("Couldn't map image url " + decodedDescriptionUrl + " to drink");
+        const drinks = imageToDrinks.get(imageIdentifier);
+        if (!drinks) {
+            console.error(`[image-info] Warning: Couldn't map result for image ${imageIdentifier} to drink`);
             continue;
         }
 
@@ -177,17 +204,14 @@ async function fetchScalingImageInfo0<D extends NonEmptyArray<IDrink>>(
         };
 
         if (!isDeepNonNullable(assembledImageInfo)) {
-            console.error("Image information is incomplete");
+            console.error(`[image-info] Warning: Image information for image ${imageIdentifier} is incomplete`);
             continue;
         }
 
-        res[drink.name as typeof drinks[number]['name']] = assembledImageInfo;
+        for (let drink of drinks) {
+            res[drink.name as typeof drinks[number]['name']] = assembledImageInfo;
+        }
     }
 
     return res;
 }
-
-
-
-// https://www.wikidata.org/w/api.php?action=query&format=json&prop=imageinfo&titles=File%3ATschunk_cropped.jpg|File:7_and_7,_Macaroni_Grill,_Dunwoody_GA.jpg&iiprop=url|mime|size&iiurlwidth=300&iiurlheight=300
-

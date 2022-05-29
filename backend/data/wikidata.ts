@@ -189,7 +189,6 @@ async function fetchDrinkData(): Promise<WikidataCocktail[]> {
     }
 
     const parsedResponse: any = JSON.parse(result.body.content);
-    console.log(result.body.content);
     return parsedResponse.results.bindings;
 }
 
@@ -209,7 +208,6 @@ function toDrinksAndIngredients(cocktails: WikidataCocktail[]): { drinks: IDrink
             let drink = drinks.get(cocktail.value);
 
             if(!drink) {
-                console.log(imageUrl?.value);
                 drink = {
                     name: cocktailLabel.value,
                     image: imageUrl?.value,
@@ -281,10 +279,8 @@ const getDrinksAndIngredients = once(async () => {
     const result = await fetchDrinkData();
     const { drinks, ingredients } = toDrinksAndIngredients(result);
 
-    const oldDrinkUrls = drinks.map(it => it.image);
-
     // then fetch additional alcohol data from OpenFoodFacts
-    // await Promise.all(ingredients.map(enrichAlcohol));
+    await Promise.all(ingredients.map(enrichAlcohol));
     
     // as all data is now present, accumulate totals
     drinks.forEach(accumulateTotal);
@@ -310,8 +306,6 @@ const getDrinksAndIngredients = once(async () => {
 
         drink.image = imageInfo.scaledImage.url;
     }
-
-    console.log(oldDrinkUrls);
 
     return { drinks, ingredients };
 });
