@@ -9,10 +9,17 @@
 }
 
 .browser-search-bar {
+    all: unset;
+
+    height: 2rem;
     width: 100%;
-    padding: 0.5rem;
+
+    padding-left: 1rem;
 
     border: none;
-    border-radius: 10px;
-    background-color: none;
+    border-radius: 1em;
+
+    font-size: 12pt;
+    background-color: var(--primary-opacity);
+    box-shadow: inset 0 0 20px var(--secondary);
 }

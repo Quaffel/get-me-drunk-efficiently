@@ -19,6 +19,8 @@ export function BrowserSearch(): JSX.Element {
     }
 
     return <div className="browser-search">
-        <input className="browser-search-bar" type="text" value={searchValue} onChange={handleChange} />
+        <input className="browser-search-bar" type="text" 
+            placeholder="Search for cocktails..."
+            value={searchValue} onChange={handleChange} />
     </div>;
 }

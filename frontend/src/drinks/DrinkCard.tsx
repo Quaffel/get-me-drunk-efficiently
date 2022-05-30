@@ -12,7 +12,7 @@ export function DrinkCard({ drink }: { drink: IDrink }) {
         <Card.Content title="Ingredients">
             {drink.ingredients.map(({ ingredient, amount, unit }, index) => 
                 <React.Fragment key={drink.name + ingredient.name + index}>
-                    {amount ? (+amount).toFixed(0) : null}{unit} {ingredient.name}<br/>
+                    {amount ? (+amount).toFixed(0) : null} {unit} {ingredient.name}<br/>
                 </React.Fragment>    
             )}
         </Card.Content>
