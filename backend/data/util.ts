@@ -1,22 +1,26 @@
-export function normalize(ingredientAmount: number, unit: string): { val: number, unit: string } {
+export type NormalizedUnit = 'ml' | 'whole'; 
+
+export function normalize(ingredientAmount: number, unit: string): { val: number, unit: NormalizedUnit } | null {
     // Convert every known unit to ml
     switch(unit) {
-        case 'fluid ounce':       return { val: ingredientAmount * 29.5735, unit: 'ml' };
-        case 'centilitre':        return { val: ingredientAmount * 10,      unit: 'ml' };
-        case 'splash':            return { val: ingredientAmount * 3.7,     unit: 'ml' };
-        case 'dash':              return { val: ingredientAmount * 0.9,     unit: 'ml' };
-        case 'millilitre':        return { val: ingredientAmount,           unit: 'ml' };
-        case 'teaspoon':          return { val: ingredientAmount * 3.7,     unit: 'ml' };
-        case 'bar spoon':         return { val: ingredientAmount * 2.5,     unit: 'ml' };
-        case 'ounce':             return { val: ingredientAmount * 29.5735, unit: 'ml' };
-        case 'Stemware':          return { val: ingredientAmount * 150,     unit: 'ml' };
-        case 'tablespoon':        return { val: ingredientAmount * 11.1,    unit: 'ml' };
-        case 'drop':              return { val: ingredientAmount * 0.05,    unit: 'ml' };
-        case 'teaspoon (metric)': return { val: ingredientAmount * 3.7,     unit: 'ml' };
-        case 'pinch':             return { val: ingredientAmount * 0.31,    unit: 'ml' };
-        case '1':                 return { val: ingredientAmount * 29.5735, unit: 'ml' };
+        case 'fluid ounce':       return { val: ingredientAmount * 29.5735, unit: 'ml'    };
+        case 'centilitre':        return { val: ingredientAmount * 10,      unit: 'ml'    };
+        case 'splash':            return { val: ingredientAmount * 3.7,     unit: 'ml'    };
+        case 'dash':              return { val: ingredientAmount * 0.9,     unit: 'ml'    };
+        case 'millilitre':        return { val: ingredientAmount,           unit: 'ml'    };
+        case 'teaspoon':          return { val: ingredientAmount * 3.7,     unit: 'ml'    };
+        case 'bar spoon':         return { val: ingredientAmount * 2.5,     unit: 'ml'    };
+        case 'ounce':             return { val: ingredientAmount * 29.5735, unit: 'ml'    };
+        case 'Stemware':          return { val: ingredientAmount * 150,     unit: 'ml'    };
+        case 'tablespoon':        return { val: ingredientAmount * 11.1,    unit: 'ml'    };
+        case 'drop':              return { val: ingredientAmount * 0.05,    unit: 'ml'    };
+        case 'teaspoon (metric)': return { val: ingredientAmount * 3.7,     unit: 'ml'    };
+        case 'pinch':             return { val: ingredientAmount * 0.31,    unit: 'ml'    };
+        
+        case 'ml':                return { val: ingredientAmount,           unit: 'ml'    };
+        case '1':                 return { val: ingredientAmount,           unit: 'whole' };
 
-        default:                  return { val: ingredientAmount,           unit: unit };
+        default:                  return null;
     }
 }
 

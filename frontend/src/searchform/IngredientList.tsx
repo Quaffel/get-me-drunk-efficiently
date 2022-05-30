@@ -5,7 +5,7 @@ import { IIngredient } from "../../../types";
 
 import * as API from "../api";
 
-export const loadAllIngredients = API.getIngredients();
+export const loadAllIngredients = API.queryIngredients();
 
 
 const normalize = (str: string) =>
@@ -74,9 +74,7 @@ export function IngredientList({ ingredients, setIngredients }: { ingredients: I
 
     return (
         <>
-        
-            <label htmlFor="ingredientInput" className="searchform-label">What's inside your fridge?</label>
-            <div className="searchform-input" onClick={() => inputRef.current?.focus()}>
+            <div className="ingredient-input" onClick={() => inputRef.current?.focus()}>
                 <input 
                     type="text" 
                     id="ingredientInput" 
@@ -84,14 +82,14 @@ export function IngredientList({ ingredients, setIngredients }: { ingredients: I
                     value={currentIngredient} 
                     onChange={event => setCurrentIngredient(event.target.value)} 
                     onKeyDown={ingredientSubmit}
-                    className="searchform-input-value"
+                    className="ingredient-input-value"
                     style={{ width: (1 + currentIngredient.length) * 10 + "px"}}
                     ref={inputRef}
                 />
                 {currentIngredient.length > 2 && !!recommendation && 
-                    <div className="searchform-completion">{recommendation.name.slice(currentIngredient.length)}</div>}
+                    <div className="ingredient-completion">{recommendation.name.slice(currentIngredient.length)}</div>}
                 {currentIngredient.length > 2 && !recommendation && 
-                    <div className="searchform-completion"> - No such ingredient?</div>}
+                    <div className="ingredient-completion"> - No such ingredient?</div>}
             
             </div>
             {ingredientsSorted.map(ingredient =>

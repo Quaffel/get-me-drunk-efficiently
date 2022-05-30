@@ -1,20 +1,47 @@
 import express, { Router, Request, Response } from 'express';
-import { IRequest, IResponse, IResponseIngredients, objIsRequest } from '../../types';
-import { getAllIngredients, getOptimalDrinkAmounts } from '../services';
+import {
+    IAllIngredientsResponse, IDrinkResponse, isDrinkQuery,
+    isTipsinessQuery, ITipsinessResponse
+} from '../../queries';
+import { getAllIngredients, getOptimalDrinkAmounts, searchDrinks } from '../services';
 
 const router: Router = Router();
 
-router.post('/get-me-drunk', express.json(), async (req: Request, res: Response) => {
-    if(!objIsRequest(req.body)) return res.status(400).end();
+router.post('/tipsiness', express.json(), async (req: Request, res: Response) => {
+    const query = req.body;
+    if (!isTipsinessQuery(query)) return res.status(400).end();
 
-    const optimalDrinks = await getOptimalDrinkAmounts(req.body.ingredients, req.body.promille, req.body.weight);
-    
-    const result: IResponse = { drinks: optimalDrinks };
+    const result: ITipsinessResponse = {
+        drinks: await getOptimalDrinkAmounts(query.ingredients, query.promille, query.weight)
+    };
+
     return res.json(result);
 });
 
-router.get('/ingredients', async (req: Request, res: Response) => {
-    const result: IResponseIngredients = { ingredients: await getAllIngredients() };
+router.get('/ingredients', async (_: Request, res: Response) => {
+    const result: IAllIngredientsResponse = { ingredients: await getAllIngredients() };
+    return res.json(result);
+});
+
+router.post('/drinks', express.json(), async (req: Request, res: Response) => {
+    const query = req.body;
+    if (!isDrinkQuery(query)) return res.status(400).end();
+
+    let eligibleDrinks;
+    try {
+        eligibleDrinks = await searchDrinks({
+            cocktailName: query.drinkName && query.drinkName.length > 0 ? query.drinkName : undefined,
+            maxAlcoholConcentration: query.maxAlcoholConcentration,
+            ingredients: query.ingredients && query.ingredients.length > 0 ? query.ingredients : undefined
+        });
+    } catch (e: unknown) {
+        return res.status(400).end();
+    }
+
+    const result: IDrinkResponse = {
+        drinks: eligibleDrinks
+    };
+
     return res.json(result);
 });
 

@@ -10,8 +10,10 @@ export function DrinkCard({ drink }: { drink: IDrink }) {
         <Card.Image src={drink.image ?? FALLBACK_DRINK_THUMBNAIL} />
         <Card.Title name={drink.name} />
         <Card.Content title="Ingredients">
-            {drink.ingredients.map(({ ingredient, amount, unit }) => 
-                <>{amount ? (+amount).toFixed(0) : null}{unit} {ingredient.name}<br/></>    
+            {drink.ingredients.map(({ ingredient, amount, unit }, index) => 
+                <React.Fragment key={drink.name + ingredient.name + index}>
+                    {amount ? (+amount).toFixed(0) : null} {unit} {ingredient.name}<br/>
+                </React.Fragment>    
             )}
         </Card.Content>
         {!!drink.instructions?.length && <Card.Content title="Instructions">

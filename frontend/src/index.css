@@ -19,7 +19,7 @@
   --text-font: 'Quicksand', sans-serif;
 }
 
-html {
+html, body, #root {
   min-height: 100%;
 }
 
@@ -31,8 +31,13 @@ body {
 }
 
 .app {
-  max-width: 1000px;
-  margin: 0 auto;
+  margin-inline: 2rem;
+}
+
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .app-title {

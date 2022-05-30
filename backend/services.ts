@@ -1,5 +1,6 @@
-import { IDrink, IDrinkAmount, IIngredient } from '../types';
+import { IDrink, IDrinkAmount, IIngredient, IIngredientAmount } from '../types';
 import { getDrinks, getIngredients } from './data/';
+import { normalize } from './data/util';
 
 const ALCOHOL_GRAM_TO_ML = 16 / 10;
 
@@ -7,19 +8,55 @@ export async function getAllIngredients(): Promise<IIngredient[]> {
     return getIngredients();
 }
 
+export async function searchDrinks({
+    cocktailName,
+    maxAlcoholConcentration,
+    ingredients
+}: {
+    cocktailName?: string,
+    maxAlcoholConcentration?: number,
+    ingredients?: Array<IIngredient["name"]>
+}): Promise<IDrink[]> {
+    let drinks = await getDrinks();
+
+    if (cocktailName) {
+        drinks = drinks.filter(it => it.name.toLowerCase().includes(cocktailName.toLowerCase()));
+    }
+
+    if (ingredients) {
+        const permissibleIngredients = new Set<IIngredient["name"]>(ingredients);
+        drinks = drinks.filter(it => {
+            return it.ingredients.find(ingr => !permissibleIngredients.has(ingr.ingredient.name)) === undefined;
+        });
+    }
+
+    if (maxAlcoholConcentration !== undefined) {
+        if (maxAlcoholConcentration < 0 || maxAlcoholConcentration > 1) {
+            throw new Error("Alcohol concentration is out of bounds");
+        }
+
+        drinks = drinks.filter(it => (it.alcoholVolume / calculateTotalVolume(it)) <= maxAlcoholConcentration);
+    }
+
+    return drinks;
+}
+
 export async function getOptimalDrinkAmounts(
-    availableIngredients: IIngredient[],
+    availableIngredients: Array<IIngredient["name"]>,
     promille: number,
     weight: number
 ): Promise<IDrinkAmount[]> {
     const allDrinks = await getDrinks();
 
     // Filter drinks with missing ingredients
-    let availableDrinks: IDrink[] = []; 
-    
-    if(availableIngredients.length) {
+    let availableDrinks: IDrink[] = [];
+
+    if (availableIngredients.length) {
         availableDrinks = allDrinks.filter(drink =>
-            areIngredientsAvailable(drink.ingredients.map(ingredientAmount => ingredientAmount.ingredient), availableIngredients)
+            areIngredientsAvailable(
+                drink.ingredients.map(ingredientAmount => ingredientAmount.ingredient),
+                availableIngredients
+            )
         );
     } else {
         availableDrinks = allDrinks;
@@ -31,14 +68,14 @@ export async function getOptimalDrinkAmounts(
     // Approximate target total alcohol in ml based on weight and promille
     const targetAlcoholMl = calculateTargetAlcohol(promille, weight);
 
-        
+
     // a drink might be yielded multiple times, group them as DrinkAmounts
     const drinkAmount = new Map<IDrink, number>();
 
-    for(const drink of getDrinksByMostAlc(targetAlcoholMl, availableDrinks)) {
+    for (const drink of getDrinksByMostAlc(targetAlcoholMl, availableDrinks)) {
         drinkAmount.set(drink, (drinkAmount.get(drink) ?? 0) + 1);
     }
-    
+
     const optimal: IDrinkAmount[] = [...drinkAmount.entries()].map(([drink, amount]) => ({ drink, amount }));
 
     const resultingAlcoholVolume = optimal
@@ -60,14 +97,15 @@ function calculateTargetAlcohol(targetPromille: number, weightKg: number): numbe
     return targetPromille * (weightKg * 0.6) * ALCOHOL_GRAM_TO_ML;
 }
 
+function calculateTotalVolume(drink: IDrink): number {
+    return drink.ingredients.reduce((acc, it) => acc + it.amount, 0);
+}
+
 function areIngredientsAvailable(
     checkIngredients: IIngredient[],
-    availableIngredients: IIngredient[]): boolean {
-
-    const availableIngredientNames = availableIngredients.map(ingredient => ingredient.name);
-    const notAvailable = checkIngredients.reduce((count, ingredient) => count - +availableIngredientNames.includes(ingredient.name), checkIngredients.length);
-
-    return notAvailable === 0;
+    availableIngredients: Array<IIngredient["name"]>
+): boolean {
+    return checkIngredients.find(it => !availableIngredients.includes(it.name)) === undefined;
 }
 
 // the maximum number a drink will be repeated
@@ -79,31 +117,31 @@ const SKIP_PROPABILITY = 0.9;
 
 /* Yields a random combination of Drinks till the targetAlcVolume is closely reached */
 function* getDrinksByMostAlc(targetAlcVolume: number, drinks: IDrink[]): Generator<IDrink> {
-  let sumAlcoholVolume = 0;
-  // First pass: get some random drinks
-  first_pass: for(const drink of drinks) {
-    // NOTE: a drink might be added another time in the second pass and a second time in the third pass
-    repetition: for(let amount = 0; amount < MAX_REPETITION - 2; amount++) {
+    let sumAlcoholVolume = 0;
+    // First pass: get some random drinks
+    first_pass: for (const drink of drinks) {
+        // NOTE: a drink might be added another time in the second pass and a second time in the third pass
+        repetition: for (let amount = 0; amount < MAX_REPETITION - 2; amount++) {
+            console.log(`Checking ${drink.name} with ${drink.alcoholVolume}ml alc, trying to reach ${targetAlcVolume}ml having ${sumAlcoholVolume}ml`);
+            if (Math.random() < SKIP_PROPABILITY) continue repetition; // skip some drinks to get a bit of variation
+            if (sumAlcoholVolume + drink.alcoholVolume! > targetAlcVolume) continue first_pass; // gets the person more dizzy than wanted, skip
+
+            yield drink;
+            sumAlcoholVolume += drink.alcoholVolume!;
+        }
+    }
+
+    // Second pass: Get close to target
+    for (const drink of drinks) {
         console.log(`Checking ${drink.name} with ${drink.alcoholVolume}ml alc, trying to reach ${targetAlcVolume}ml having ${sumAlcoholVolume}ml`);
-        if(Math.random() < SKIP_PROPABILITY) continue repetition; // skip some drinks to get a bit of variation
-        if(sumAlcoholVolume + drink.alcoholVolume! > targetAlcVolume) continue first_pass; // gets the person more dizzy than wanted, skip
-    
+        if (sumAlcoholVolume + drink.alcoholVolume! > targetAlcVolume) continue; // gets the person more dizzy than wanted, skip
         yield drink;
         sumAlcoholVolume += drink.alcoholVolume!;
     }
-  }
 
-  // Second pass: Get close to target
-  for(const drink of drinks) {
-    console.log(`Checking ${drink.name} with ${drink.alcoholVolume}ml alc, trying to reach ${targetAlcVolume}ml having ${sumAlcoholVolume}ml`);
-    if(sumAlcoholVolume + drink.alcoholVolume! > targetAlcVolume) continue; // gets the person more dizzy than wanted, skip
-    yield drink;
-    sumAlcoholVolume += drink.alcoholVolume!;
-  }
+    // Third pass: Lastly, if we can get even closer by hitting over the target, also add the smallest
+    const smallest = drinks[drinks.length - 1];
+    if (smallest && Math.abs(targetAlcVolume - sumAlcoholVolume - smallest.alcoholVolume) < targetAlcVolume - sumAlcoholVolume)
+        yield smallest;
 
-  // Third pass: Lastly, if we can get even closer by hitting over the target, also add the smallest
-  const smallest = drinks[drinks.length - 1];
-  if(smallest && Math.abs(targetAlcVolume - sumAlcoholVolume - smallest.alcoholVolume) < targetAlcVolume - sumAlcoholVolume)
-    yield smallest;
-   
 }

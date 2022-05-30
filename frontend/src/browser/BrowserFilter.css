@@ -1,0 +1,51 @@
+.browser-filter-element > label {
+    font-size: 12pt;
+    font-weight: bold;
+}
+
+.browser-filter-slider {
+    margin-top: .25rem;
+
+    width: 100%;
+    accent-color: gray;
+}
+
+.browser-filter-slider::-webkit-slider-runnable-track {
+  border-radius: 10px;
+  box-shadow: 2px 2px 4px gray;
+  background: linear-gradient(to right, var(--title), var(--tertiary));
+}
+
+.browser-filter-slider::-moz-range-track {
+    height: 1rem;
+    border-radius: 10px;
+    box-shadow: 2px 2px 4px gray;
+    background: linear-gradient(to right, var(--title), var(--tertiary));
+    border: none;
+    -moz-appearance: none;
+}
+
+.browser-filter-slider {
+    background: transparent;
+}
+
+.browser-filter-slider-value {
+    margin-top: .5rem;
+
+    display: flex;
+
+    justify-content: space-between;
+    align-items: center;
+}
+
+.browser-filter-slider-value > input {
+    width: 4ch;
+    text-align: center;
+
+    background: none;
+
+    border: solid 1px gray;
+    border-radius: 5px;
+
+    padding: .2rem;
+}

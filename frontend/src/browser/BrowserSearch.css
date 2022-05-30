@@ -1,0 +1,25 @@
+.browser-search {
+    display: flex;
+    grid-area: search;
+
+    justify-content: center;
+    align-items: center;
+
+    flex-grow: 1;
+}
+
+.browser-search-bar {
+    all: unset;
+
+    height: 2rem;
+    width: 100%;
+
+    padding-left: 1rem;
+
+    border: none;
+    border-radius: 1em;
+
+    font-size: 12pt;
+    background-color: var(--primary-opacity);
+    box-shadow: inset 0 0 20px var(--secondary);
+}

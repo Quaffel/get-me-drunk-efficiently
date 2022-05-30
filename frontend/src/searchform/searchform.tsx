@@ -3,7 +3,7 @@ import './searchform.css';
 
 import { IngredientList, loadAllIngredients } from './IngredientList';
 import { IIngredient } from "../../../types";
-import { useTipsySelector } from '../tipsyselector/tipsyselector';
+import { useTipsySelector } from '../tipsiness/tipsyselector/tipsyselector';
 
 const INGREDIENT_STORE = "get-me-drunk-fridge";
 
@@ -28,7 +28,6 @@ function SearchForm({
 
             setIngredients(prev => prev !== null ? prev : resultIngredients); 
         })();
-       
     }, []);
 
     React.useEffect(() => {
@@ -40,7 +39,10 @@ function SearchForm({
     return (
         <>
             <div className="segment">
-                {ingredients !== null && <IngredientList ingredients={ingredients} setIngredients={setIngredients} />}
+                {ingredients !== null && <>
+                    <label htmlFor="ingredientInput" className="searchform-label">What's inside your fridge?</label>
+                    <IngredientList ingredients={ingredients} setIngredients={setIngredients} />
+                </>}
             </div>
             <div className="segment">
                 <label htmlFor="weightInput" className="searchform-label">How much do you weight?</label>
