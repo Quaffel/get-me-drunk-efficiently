@@ -1,5 +1,3 @@
-export const USER_AGENT = 'GetMeDrunkEfficiently/0.0 (https://github.com/Quaffel/get-me-drunk-efficiently)';
-
 export function normalize(ingredientAmount: number, unit: string): { val: number, unit: string } {
     // Convert every known unit to ml
     switch(unit) {
@@ -45,4 +43,42 @@ export function once<T>(retrieve: () => T) {
         
         return cached;
     }
+}
+
+export type NonEmptyArray<T> = [T, ...T[]];
+
+export type DeepPartial<T> = T extends object ? {
+    [K in keyof T]?: DeepPartial<T[K]>;
+} : T;
+
+export type DeepNonNullable<T> = T extends object ? {
+    [K in keyof T]-?: DeepNonNullable<T[K]>;  
+} : NonNullable<T>;
+
+export function isDeepNonNullable<T extends { [name: PropertyKey]: any }>(obj: T): obj is DeepNonNullable<T> {
+    for (let entry of Object.entries(obj)) {
+        const value = entry[1];
+        if (value === null || value === undefined) {
+            return false;
+        }
+        if (typeof value === 'object' && !isDeepNonNullable(value)) {
+            return false;
+        } 
+    }
+
+    return true;
+}
+
+export function discerpInBatches<T>(data: Array<T>, maxBatchSize: number): Array<NonEmptyArray<T>> {
+    let result: Array<NonEmptyArray<T>> = [];
+    let batchStartIndex = 0;
+    while (batchStartIndex < data.length) {
+        const batchSize = Math.min(data.length - batchStartIndex, maxBatchSize);
+        const batchEndIndex = batchStartIndex + batchSize;
+
+        result.push(data.slice(batchStartIndex, batchEndIndex) as NonEmptyArray<T>);
+        batchStartIndex = batchEndIndex;
+    }
+
+    return result;
 }

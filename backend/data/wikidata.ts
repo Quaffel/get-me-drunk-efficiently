@@ -1,11 +1,11 @@
-import { IncomingMessage } from 'http';
-import https from 'https';
+import { fetch } from './fetch';
 
 import { IDrink, IIngredient } from "../../types";
 import { getAlcohol } from './openfoodfacts';
-import { cached, normalize, once, USER_AGENT } from './util';
+import { NonEmptyArray, normalize, once } from './util';
+import { fetchScalingImageInfo } from './wikimedia-imageinfo';
 
-const URL = 'https://query.wikidata.org/sparql';
+const SERVICE_URL = 'https://query.wikidata.org/sparql';
 
 const DRINK_QUERY = `
     prefix wdt: <http://www.wikidata.org/prop/direct/>
@@ -166,38 +166,30 @@ interface WikidataCocktail {
     imageUrl?: SparqlValue<string>;
 };
 
-function fetchDrinkData(): Promise<WikidataCocktail[]> {
+async function fetchDrinkData(): Promise<WikidataCocktail[]> {
     const postData = `query=${encodeURIComponent(DRINK_QUERY)}`;
 
-    return new Promise<WikidataCocktail[]>((resolve, reject) => {
-        const requestTime = Date.now();
-        const request = https.request(URL, {
-            method: 'POST',
-            headers: {
-                'Accept': 'application/sparql-results+json',
-                'User-Agent': USER_AGENT,
-                'Content-Type': 'application/x-www-form-urlencoded',
-                'Content-Length': Buffer.byteLength(postData)
-            }
-        }, (res: IncomingMessage) => {
-            let body: string = '';
-            res.on('error', (err) => reject(err));
-            res.on('data', (chunk: string) => body += chunk);
-            res.on('end', async () => {
-                // Debug
-                const returnTime = Date.now();
-                console.log(`Wikidata query ended after ${returnTime - requestTime}ms`);
-                // console.log(`Wikidata responded with`, body);
-
-                const result = JSON.parse(body);
-                resolve(result.results.bindings);
-            });
-        });
-
-        // Write request body
-        request.write(postData);
-        request.end();
+    const requestTime = Date.now();
+    const result = await fetch<'application/sparql-results+json'>(SERVICE_URL, {
+        method: 'POST',
+        accept: 'application/sparql-results+json',
+        body: {
+            mimeType: 'application/x-www-form-urlencoded',
+            content: postData
+        }
     });
+    const returnTime = Date.now();
+    console.log(`Wikidata query ended after ${returnTime - requestTime}ms`);
+
+    if (result.type === 'error') {
+        throw new Error(result.error);
+    }
+    if (result.type === 'redirect') {
+        throw new Error("Unexpected redirect");
+    }
+
+    const parsedResponse: any = JSON.parse(result.body.content);
+    return parsedResponse.results.bindings;
 }
 
 function toDrinksAndIngredients(cocktails: WikidataCocktail[]): { drinks: IDrink[], ingredients: IIngredient[] } {
@@ -271,15 +263,71 @@ function accumulateTotal(drink: IDrink) {
     console.log(`Wikidata accumulated alcohol of ${drink.name} to ${drink.alcoholVolume}%vol`);
 }
 
+// Normalization is the process of transforming one URL of one service of the Wikimedia Foundation to 
+// another URL that points to the same resources.  This is necessary due to a mismatch of URL schemes
+// in different APIs, namely Wikidata-provided data and the information provided by other APIs.  
+// Besides differences in the URL schemes, there are also subtle differences in how 
+// URI component encoding is performed.
+//
+// The images requested from Wikidata (via property P18) follow the scheme
+//   http://commons.wikimedia.org/wiki/Special:FilePath/<image_identifier>
+// All non-latin characters are encoded using the percent sign-based URI encoding scheme.
+// Words are separated by whitespace characters (encoded as '%20').
+// (As a sidenote: The data returned by the Wikidata Query Service violates the URL scheme provided in
+// item P18.  It is unclear why this mismatch occurs, especially because it is properly displayed in
+// the query builder on https://query.wikidata.org/.)
+//
+// The Wikimedia API deals with URLs that follow the scheme
+//   https://commons.wikimedia.org/wiki/<image_identfier>
+// Most non-latin characters are encoded using the percent sign-based URI encoding scheme.  The special characters
+// "$-_.+!*'()," (as per RFC 1738), however, are provided unencoded in the URL.
+// Words are separated by underscore characters.
+//
+// During the conversion from the former scheme to the latter, we do not re-encode the URI.
+// It is expected that any sane fetch API/URL builder will do so once an actual request is performed.
+function normalizeWikimediaUrl(drinkUrl: string): string | null {
+    const imageUrl = new URL(drinkUrl);
+    const matchInfo = imageUrl.pathname.match(/\/wiki\/Special:FilePath\/([\w\d\-%_]+\.\w{1,3})/);
+
+    return matchInfo !== null
+        ? "https://commons.wikimedia.org/wiki/File:" + decodeURIComponent(matchInfo[1]).replace(/ /g, "_")
+        : null;
+}
+
 const getDrinksAndIngredients = once(async () => {
     const result = await fetchDrinkData();
     const { drinks, ingredients } = toDrinksAndIngredients(result);
 
-    // then fetch additional alcohol data from OpenFoodFacts
+    // Fetch additional information on alcohol contents from Open Food Facts 
+    // and adjust the ingredients' alcohol property.
     await Promise.all(ingredients.map(enrichAlcohol));
     
-    // as all data is now present, accumulate totals
+    // Accumulate the the drinks' respective total alcohol volume.
     drinks.forEach(accumulateTotal);
+
+    // Normalize the Wikimedia image URLs.  
+    drinks.forEach(it => { 
+        if (it.image) { 
+            const normalizedUrl = normalizeWikimediaUrl(it.image) ;
+            if (!normalizedUrl) {
+                console.error(`Warning: Failed to normalize the Wikimedia URL "${it.image}" for drink ${it.name}`);
+                return;
+            }
+
+            it.image = normalizedUrl;
+        }
+    });
+
+    const images = await fetchScalingImageInfo(drinks, { width: 300, height: 300 });
+    for (let [drinkName, imageInfo] of Object.entries(images!)) {
+        const drink = drinks.find(it => it.name === drinkName);
+        if (drink === undefined) {
+            console.error("Warning: Couldn't map the image info back to a drink");
+            continue;
+        }
+
+        drink.image = imageInfo.scaledImage.url;
+    }
 
     return { drinks, ingredients };
 });
