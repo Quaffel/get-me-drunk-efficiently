@@ -2,7 +2,7 @@ import { fetch } from './fetch';
 
 import { IDrink, IIngredient } from "../../types";
 import { getAlcohol } from './openfoodfacts';
-import { NonEmptyArray, normalize, once } from './util';
+import { isUnit, isVolumetricUnit, NonEmptyArray, normalize, once } from './util';
 import { fetchScalingImageInfo } from './wikimedia-imageinfo';
 
 const SERVICE_URL = 'https://query.wikidata.org/sparql';
@@ -226,13 +226,19 @@ function toDrinksAndIngredients(cocktails: WikidataCocktail[]): { drinks: IDrink
             continue;
         }
 
-        const amount = normalize(ingredientAmount.value, ingredientUnitLabel.value);
+        const ingredientUnit = ingredientUnitLabel.value;
+        if (!isUnit(ingredientUnit)) {
+            discardResult("Unknown unit");
+            continue;
+        }
+
+        const amount = normalize(ingredientAmount.value, ingredientUnit);
         if (amount === null) {
             discardResult("Couldn't normalize amount");
             continue;
         }
-        if (amount.val <= 0) {
-            discardResult("Negative or zeroed out amount");
+        if (amount.val < 0 || (amount.val === 0 && isVolumetricUnit(ingredientUnit))) {
+            discardResult("Invalid amount (negative for all units, additionally zero for volumetric units)");
             continue;
         }
 
