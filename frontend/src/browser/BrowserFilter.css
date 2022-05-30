@@ -1,3 +1,44 @@
+.browser-filter {
+    padding: 0.9rem;
+    border: solid var(--primary) 2px;
+}
+
+.browser-filter > summary {
+    display: flex;
+    justify-content: space-between;
+
+    color: var(--primary);
+
+    font-size: 1.3rem;
+    font-weight: bold;
+}
+
+.browser-filter > *:not(summary) {
+    margin-top: 1rem;
+    margin-bottom: 0.5rem;
+}
+
+.browser-filter > summary::after {
+    content: "-";
+}
+
+.browser-filter[open] > summary::after {
+    content: "+";
+}
+
+.browser-filter > summary:first-of-type {
+    list-style: none;
+}
+
+@media screen and (min-width: 1200px) {
+    .browser-filter {
+        border: none;
+    }
+    .browser-filter[open] > summary {
+        display: none;
+    }
+}
+
 .browser-filter-element > label {
     font-size: 12pt;
     font-weight: bold;

@@ -2,10 +2,17 @@
     grid-area: result;
     
     width: 100%;
+    margin-top: 0.5rem;
 
-    display: grid;
+    display: flex;
+    flex-wrap: wrap;
     column-gap: 2rem;
     grid-template-columns: 1fr 1fr;
+}
+
+.browser-result-grid > * {
+    flex-basis: 0;
+    flex-grow: 1;
 }
 
 .browser-result-status {

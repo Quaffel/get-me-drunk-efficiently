@@ -1,6 +1,31 @@
 import React from 'react';
+import { IIngredient } from '../../../types';
+import { IngredientList } from '../searchform/IngredientList';
 
 import './BrowserFilter.css';
+
+export function BrowserFilterPane({
+    maxAlcoholConcentration,
+    onMaxAlcoholConcentrationUpdate,
+    ingredients,
+    onIngredientsUpdate
+}: {
+    maxAlcoholConcentration: number,
+    onMaxAlcoholConcentrationUpdate: (value: number) => void,
+    ingredients: Array<IIngredient>,
+    onIngredientsUpdate: (value: Array<IIngredient>) => void
+}): JSX.Element {
+    return <details className="browser-filter" open={true}>
+        <summary>Filter options</summary>
+        <FilterElement label="Concentration of alcohol">
+            <ValueSlider min={0} max={1} precision={.05} 
+                value={maxAlcoholConcentration} onValueUpdate={onMaxAlcoholConcentrationUpdate} />
+        </FilterElement>
+        <FilterElement label="Ingredients">
+            <IngredientList ingredients={ingredients} setIngredients={onIngredientsUpdate} />
+        </FilterElement>
+    </details>;
+}
 
 export function FilterElement({
     label,
