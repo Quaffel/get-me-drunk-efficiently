@@ -1,6 +1,7 @@
 .browser-filter {
     padding: 0.9rem;
     border: solid var(--primary) 2px;
+    user-select: none;
 }
 
 .browser-filter > summary {
