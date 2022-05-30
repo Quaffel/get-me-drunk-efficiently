@@ -1,11 +1,10 @@
 import React from 'react';
-import './App.css';
-import { DrinkList } from './drinks/DrinkList';
-import { IDrinkAmount, IIngredient } from "../../types";
-import { Banner } from './basic/Banner';
-import { Spinner } from './basic/Spinner';
-import SearchForm from './searchform/searchform';
-import *  as API from "./api";
+import { DrinkList } from '../drinks/DrinkList';
+import { IDrinkAmount, IIngredient } from "../../../types";
+import { Banner } from '../basic/Banner';
+import { Spinner } from '../basic/Spinner';
+import SearchForm from '../searchform/searchform';
+import *  as API from "../api";
 
 function App() {
   const [state, setState] = React.useState<{ pending?: true, loading?: true, result?: IDrinkAmount[], error?: string }>({ pending: true });

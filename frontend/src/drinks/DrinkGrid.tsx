@@ -3,7 +3,6 @@ import { Card } from '../basic/Card';
 import { DrinkCard } from './DrinkCard';
 
 import './DrinkGrid.css';
-import '../App.css';
 
 export function DrinkGrid({ drinks }: { drinks: Array<IDrink> }): JSX.Element {
     if (drinks.length === 0) {

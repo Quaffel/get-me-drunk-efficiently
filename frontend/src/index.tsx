@@ -1,13 +1,13 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import App from './App';
+import App from './tipsiness/App';
 import { Browser } from './browser/Browser';
-
-import './App.css';
 import { SearchProvider } from './browser/search';
 import { NavProvider } from './nav/nav';
 import { Navbar } from './nav/Navbar';
 import { BrowserSearch } from './browser/BrowserSearch';
+
+import './index.css';
 
 ReactDOM.render(
   <React.StrictMode>
