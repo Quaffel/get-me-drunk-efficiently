@@ -1,5 +1,3 @@
-export const USER_AGENT = 'GetMeDrunkEfficiently/0.0 (https://github.com/Quaffel/get-me-drunk-efficiently)';
-
 export type NormalizedUnit = 'ml' | 'whole'; 
 
 export function normalize(ingredientAmount: number, unit: string): { val: number, unit: NormalizedUnit } | null {
