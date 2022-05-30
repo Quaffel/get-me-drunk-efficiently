@@ -1,6 +1,7 @@
 import React from 'react';
 import { IDrink, IIngredient } from '../../../types';
 import { queryDrinks } from '../api';
+import { arrayEquals } from '../util/array';
 
 import './Browser.css';
 
@@ -31,7 +32,7 @@ export type Query = PendingQuery | LoadingQuery | FailedQuery | CompletedQuery;
 
 interface SearchContextProps {
     readonly query: Query,
-    submitQuery: (block: (prevQuery: Query) => QueryData) => void
+    submitQuery: (block: (prevQuery: Query) => QueryData) => boolean
 }
 const SearchContext = React.createContext<SearchContextProps>({} as any);
 
@@ -44,17 +45,28 @@ export function SearchProvider({ children }: React.PropsWithChildren<{}>): JSX.E
         lastCompletedQuery: null
     });
 
-    function submitQuery(block: (prevQuery: Query) => QueryData) {
-        setQuery(prev => ({
+    function submitQuery(block: (prevQuery: Query) => QueryData): boolean {
+        const prevQuery = query;
+        const newQueryData = block(prevQuery);
+
+        if (prevQuery.data.drinkName === newQueryData.drinkName
+            && arrayEquals(prevQuery.data.ingredients, newQueryData.ingredients)
+            && prevQuery.data.maxAlcoholConcentration === newQueryData.maxAlcoholConcentration) {
+            // Query data is equal to the query data of the previous query.  Skip query.
+            return false;
+        }
+
+        setQuery(() => ({
             state: 'pending',
-            data: block(prev),
-            lastCompletedQuery: prev.state === 'completed' ? prev : prev.lastCompletedQuery
+            data: newQueryData,
+            lastCompletedQuery: prevQuery.state === 'completed' ? prevQuery : prevQuery.lastCompletedQuery
         }));
+        return true;
     }
 
     React.useEffect(() => {
         if (query.state !== 'pending') {
-            return; 
+            return;
         }
 
         // Do not send any request until one second has passed without user interaction. 
@@ -72,8 +84,6 @@ export function SearchProvider({ children }: React.PropsWithChildren<{}>): JSX.E
                 data: query.data,
                 results: drinks
             });
-
-            console.log("finished query");
         }, 1000);
         return () => clearTimeout(timeout);
     }, [query])

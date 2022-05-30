@@ -43,8 +43,6 @@ export function BrowserResult(): JSX.Element {
         return <BrowserStatusMessage>Loading</BrowserStatusMessage>;
     }
 
-    console.log("rerendering results");
-    console.log(contentQuery.results);
     return <div className="browser-result"><DrinkGrid drinks={contentQuery.results} /></div>;
 }
 
