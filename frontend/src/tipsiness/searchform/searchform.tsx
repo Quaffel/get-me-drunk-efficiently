@@ -1,9 +1,9 @@
 import * as React from 'react';
 import './searchform.css';
 
-import { IngredientList, loadAllIngredients } from './IngredientList';
-import { IIngredient } from "../../../types";
-import { useTipsySelector } from '../tipsiness/tipsyselector/tipsyselector';
+import { IngredientList, loadAllIngredients } from '../../searchform/IngredientList';
+import { IIngredient } from "../../../../types";
+import { useTipsySelector } from '../tipsyselector/tipsyselector';
 
 const INGREDIENT_STORE = "get-me-drunk-fridge";
 
