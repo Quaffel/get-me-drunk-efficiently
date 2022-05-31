@@ -12,7 +12,8 @@ export function Navbar(): JSX.Element {
     return <nav>
         {elements.map(it => {
             const classSet = selectedElement.id === it.id ? "nav-item selected" : "nav-item";
-            return <div className={classSet} onClick={() => handleItemSelect(it.id)}>
+            return <div key={it.name} className={classSet} 
+                onClick={() => handleItemSelect(it.id)}>
                 {it.name}
             </div>
         })}
