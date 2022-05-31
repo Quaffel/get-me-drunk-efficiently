@@ -26,10 +26,12 @@
 }
 
 .basic-card-title {
-    font-weight: bold;
     text-align: center;
     font-family: var(--text-font);
     font-size: 30px;
+    font-weight: bold;
+    line-height: 1.1em;
+    margin-top: 1rem;
 }
 
 .basic-card-content {
