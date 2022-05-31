@@ -71,6 +71,13 @@ header::after {
     border: solid 1px var(--primary);
 }
 
+.header-search {
+  flex-grow: 1;
+
+  display: none;
+  padding-left: 20px;
+}
+
 @media screen and (min-width: 1200px) {
     header {
         display: flex;
@@ -90,5 +97,9 @@ header::after {
 
     .app-title::after {
         all: unset;
+    }
+
+    .header-search {
+      display: flex;
     }
 }

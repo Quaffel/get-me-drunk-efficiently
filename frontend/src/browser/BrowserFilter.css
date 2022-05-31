@@ -31,6 +31,10 @@
     list-style: none;
 }
 
+.browser-filter-search {
+    display: block;
+}
+
 @media screen and (min-width: 1200px) {
     .browser-filter {
         border: none;
@@ -38,11 +42,18 @@
     .browser-filter[open] > summary {
         display: none;
     }
+
+    .browser-filter-search {
+        display: none;
+    }
 }
 
 .browser-filter-element > label {
     font-size: 12pt;
     font-weight: bold;
+
+    display: block;
+    margin-bottom: 0.3rem;
 }
 
 .browser-filter-slider {

@@ -31,7 +31,16 @@ interface CompletedQuery extends QueryBase<'completed'> {
 export type Query = PendingQuery | LoadingQuery | FailedQuery | CompletedQuery;
 
 interface SearchContextProps {
-    readonly query: Query,
+    // Allows search bars that enable the user to search by drink name to coordinate their content.
+    // This is essential for the site's responsiveness as the search bar that the user needs to interact with
+    // isn't necessarily the same in all page layouts.
+    // Due to query debouncing and potentially other effects, this is not necessarily equivalent to the
+    // 'drinkName' property of the currently active query.
+    searchValue: string,
+    setSearchValue: (searchValue: string) => void,
+
+    // Currently active query
+    query: Query,
     submitQuery: (block: (prevQuery: Query) => QueryData) => boolean
 }
 const SearchContext = React.createContext<SearchContextProps>({} as any);
@@ -39,6 +48,7 @@ const SearchContext = React.createContext<SearchContextProps>({} as any);
 export const useSearch = () => React.useContext(SearchContext);
 
 export function SearchProvider({ children }: React.PropsWithChildren<{}>): JSX.Element {
+    const [searchValue, setSearchValue] = React.useState<string>("");
     const [query, setQuery] = React.useState<Query>({
         state: 'pending',
         data: {},
@@ -65,6 +75,13 @@ export function SearchProvider({ children }: React.PropsWithChildren<{}>): JSX.E
     }
 
     React.useEffect(() => {
+        submitQuery(prev => ({
+            ...prev.data,
+            drinkName: searchValue
+        }));
+    }, [searchValue]);
+
+    React.useEffect(() => {
         if (query.state !== 'pending') {
             return;
         }
@@ -89,6 +106,8 @@ export function SearchProvider({ children }: React.PropsWithChildren<{}>): JSX.E
     }, [query])
 
     const context = React.useMemo<SearchContextProps>(() => ({
+        searchValue,
+        setSearchValue,
         query,
         submitQuery
     }), [query]);

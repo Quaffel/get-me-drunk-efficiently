@@ -17,7 +17,9 @@ ReactDOM.render(
           <header>
             <div className="app-title">Get me drunk <span className="app-title-suffix">efficiently</span></div>
             <Navbar />
-            <BrowserSearch />
+            <div className="header-search">
+              <BrowserSearch showPlaceholder={true} />
+            </div>
           </header>
           <navElement id="tipsiness" name="Browse by tipsiness">
             <App />

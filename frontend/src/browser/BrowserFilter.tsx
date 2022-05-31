@@ -1,6 +1,7 @@
 import React from 'react';
 import { IIngredient } from '../../../types';
 import { IngredientList } from '../searchform/IngredientList';
+import { BrowserSearch } from './BrowserSearch';
 
 import './BrowserFilter.css';
 
@@ -17,6 +18,9 @@ export function BrowserFilterPane({
 }): JSX.Element {
     return <details className="browser-filter" open={true}>
         <summary>Filter options</summary>
+        <FilterElement label="Drink name" styles={["browser-filter-search"]}>
+            <BrowserSearch />
+        </FilterElement>
         <FilterElement label="Concentration of alcohol">
             <ValueSlider min={0} max={1} precision={.05} 
                 value={maxAlcoholConcentration} onValueUpdate={onMaxAlcoholConcentrationUpdate} />
@@ -29,11 +33,15 @@ export function BrowserFilterPane({
 
 export function FilterElement({
     label,
-    children
+    children,
+    styles
 }: React.PropsWithChildren<{
-    label: string
+    label: string,
+    styles?: Array<string>
 }>): JSX.Element {
-    return <div className="browser-filter-element">
+    // TODO: Once the :has pseudoclass is supported by all major browsers, the filter element
+    // of the browser search can be selected directly.  This hack would thus become superfluous.
+    return <div className={`browser-filter-element ${styles?.join(" ")}`}>
         <label>{label}</label>
         {children}
     </div>

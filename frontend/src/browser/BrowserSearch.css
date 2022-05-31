@@ -1,18 +1,11 @@
 .browser-search {
-    display: none;
-}
+    display: flex;
+    grid-area: search;
 
-@media screen and (min-width: 1200px) {
-    .browser-search {
-        display: flex;
-        grid-area: search;
-    
-        justify-content: center;
-        align-items: center;
+    justify-content: center;
+    align-items: center;
 
-        padding-left: 20px;
-        flex-grow: 1;
-    }
+    flex-grow: 1;
 }
 
 .browser-search-bar {
