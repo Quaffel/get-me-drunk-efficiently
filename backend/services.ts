@@ -1,6 +1,5 @@
-import { IDrink, IDrinkAmount, IIngredient, IIngredientAmount } from '../types';
+import { IDrink, IDrinkAmount, IIngredient } from '../types';
 import { getDrinks, getIngredients } from './data/';
-import { normalize } from './data/util';
 
 const ALCOHOL_GRAM_TO_ML = 16 / 10;
 
@@ -9,18 +8,18 @@ export async function getAllIngredients(): Promise<IIngredient[]> {
 }
 
 export async function searchDrinks({
-    cocktailName,
+    drinkName,
     maxAlcoholConcentration,
     ingredients
 }: {
-    cocktailName?: string,
+    drinkName?: string,
     maxAlcoholConcentration?: number,
     ingredients?: Array<IIngredient["name"]>
 }): Promise<IDrink[]> {
     let drinks = await getDrinks();
 
-    if (cocktailName) {
-        drinks = drinks.filter(it => it.name.toLowerCase().includes(cocktailName.toLowerCase()));
+    if (drinkName) {
+        drinks = drinks.filter(it => it.name.toLowerCase().includes(drinkName.toLowerCase()));
     }
 
     if (ingredients) {
@@ -33,10 +32,10 @@ export async function searchDrinks({
     if (maxAlcoholConcentration !== undefined) {
         if (maxAlcoholConcentration < 0 || maxAlcoholConcentration > 1) {
             throw new Error("Alcohol concentration is out of bounds");
-        }
-
-        drinks = drinks.filter(it => (it.alcoholVolume / calculateTotalVolume(it)) <= maxAlcoholConcentration);
+        }   
     }
+
+    console.log("after alc concentration: " + drinks.find(it => it.name === "Ramos Gin Fizz"));
 
     return drinks;
 }
