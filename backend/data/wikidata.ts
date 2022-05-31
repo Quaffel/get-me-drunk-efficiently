@@ -150,20 +150,20 @@ const DRINK_QUERY = `
     ORDER BY ASC(?cocktailLabel)
     `;
 
-type SparqlValue<T> = {
+interface SparqlValue {
     type: 'uri' | 'literal';
-    value: T;
+    value: string;
 };
 
 interface WikidataCocktail {
-    cocktail: SparqlValue<string>;
-    cocktailLabel: SparqlValue<string>;
-    alcohol?: SparqlValue<number>;
-    ingredientLabel?: SparqlValue<string>;
-    ingredientAmount?: SparqlValue<number>;
-    ingredientUnitLabel?: SparqlValue<string>;
-    offCategory?: SparqlValue<string>;
-    imageUrl?: SparqlValue<string>;
+    cocktail: SparqlValue;
+    cocktailLabel: SparqlValue;
+    alcoholConcentration?: SparqlValue;
+    ingredientLabel?: SparqlValue;
+    ingredientAmount?: SparqlValue;
+    ingredientUnitLabel?: SparqlValue;
+    offCategory?: SparqlValue;
+    imageUrl?: SparqlValue;
 };
 
 async function fetchDrinkData(): Promise<WikidataCocktail[]> {
@@ -202,7 +202,7 @@ function toDrinksAndIngredients(cocktails: WikidataCocktail[]): { drinks: IDrink
 
     for (let {
         cocktail, cocktailLabel, imageUrl,
-        alcohol, ingredientAmount, ingredientLabel, ingredientUnitLabel, offCategory
+        alcoholConcentration, ingredientAmount, ingredientLabel, ingredientUnitLabel, offCategory
     } of cocktails) {
         function discardResult(reason: string) {
             console.error(`Warning: Discard ingredient "${ingredientLabel?.value}" `
@@ -226,13 +226,25 @@ function toDrinksAndIngredients(cocktails: WikidataCocktail[]): { drinks: IDrink
             continue;
         }
 
+        const numericIngredientAmount = Number.parseFloat(ingredientAmount.value);
+        if (Number.isNaN(numericIngredientAmount)) {
+            discardResult("Non-numeric ingredient amount");
+        }
+
+        const numericAlcoholConcentration = alcoholConcentration !== undefined 
+            ? Number.parseFloat(alcoholConcentration.value) / 100 
+            : 0;
+        if (Number.isNaN(numericAlcoholConcentration)) {
+            discardResult("Non-numeric alcohol concentration");
+        }
+
         const ingredientUnit = ingredientUnitLabel.value;
         if (!isUnit(ingredientUnit)) {
             discardResult("Unknown unit");
             continue;
         }
 
-        const amount = normalize(ingredientAmount.value, ingredientUnit);
+        const amount = normalize(numericIngredientAmount, ingredientUnit);
         if (amount === null) {
             discardResult("Couldn't normalize amount");
             continue;
@@ -243,7 +255,6 @@ function toDrinksAndIngredients(cocktails: WikidataCocktail[]): { drinks: IDrink
         }
 
         let drink = drinks.get(cocktail.value);
-
         if (!drink) {
             drink = {
                 name: cocktailLabel.value,
@@ -255,23 +266,24 @@ function toDrinksAndIngredients(cocktails: WikidataCocktail[]): { drinks: IDrink
         }
 
         let ingredient = ingredients.get(ingredientLabel.value);
-
         if (!ingredient) {
             ingredient = {
                 name: ingredientLabel.value,
                 category: offCategory?.value,
-                alcoholConcentration: alcohol ? alcohol.value / 100 : 0
+                alcoholConcentration: numericAlcoholConcentration
             };
             ingredients.set(ingredientLabel.value, ingredient);
         }
 
-        // Add IngredientAmount
-        drink.ingredients.push({
-            ingredient,
-            amount: amount.val,
-            unit: amount.unit
-        });
-
+        // If an ingredient has multiple categories, it will appear in multiple rows.  We must therefore
+        // ensure that the ingredient isn't present yet.
+        if (drink.ingredients.find(it => it.ingredient.name === ingredient!.name) === undefined) {
+            drink.ingredients.push({
+                ingredient: ingredient,
+                amount: amount.val,
+                unit: amount.unit
+            });
+        }
     }
 
     console.log(`Wikidata: Fetched ${drinks.size} drinks with ${ingredients.size} unique ingredients`);
@@ -367,6 +379,9 @@ const getDrinksAndIngredients = once(async () => {
 
         drink.image = imageInfo.scaledImage.url;
     }
+
+    console.log(drinks.map(it => it.name));
+    console.log(drinks.find(it => it.name === "Ramos Gin Fizz"));
 
     return { drinks, ingredients };
 });
