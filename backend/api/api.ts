@@ -30,7 +30,7 @@ router.post('/drinks', express.json(), async (req: Request, res: Response) => {
     let eligibleDrinks;
     try {
         eligibleDrinks = await searchDrinks({
-            cocktailName: query.drinkName && query.drinkName.length > 0 ? query.drinkName : undefined,
+            drinkName: query.drinkName && query.drinkName.length > 0 ? query.drinkName : undefined,
             maxAlcoholConcentration: query.maxAlcoholConcentration,
             ingredients: query.ingredients && query.ingredients.length > 0 ? query.ingredients : undefined
         });

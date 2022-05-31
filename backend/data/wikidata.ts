@@ -2,8 +2,9 @@ import { fetch } from './fetch';
 
 import { IDrink, IIngredient } from "../../types";
 import { getAlcohol } from './openfoodfacts';
-import { NonEmptyArray, normalize, once } from './util';
+import { isTrivialUnit, isUnit, isVolumetricUnit } from '../../types';
 import { fetchScalingImageInfo } from './wikimedia-imageinfo';
+import { normalize, once } from './util';
 
 const SERVICE_URL = 'https://query.wikidata.org/sparql';
 
@@ -150,20 +151,20 @@ const DRINK_QUERY = `
     ORDER BY ASC(?cocktailLabel)
     `;
 
-type SparqlValue<T> = {
+interface SparqlValue {
     type: 'uri' | 'literal';
-    value: T;
+    value: string;
 };
 
 interface WikidataCocktail {
-    cocktail: SparqlValue<string>;
-    cocktailLabel: SparqlValue<string>;
-    alcohol?: SparqlValue<number>;
-    ingredientLabel?: SparqlValue<string>;
-    ingredientAmount?: SparqlValue<number>;
-    ingredientUnitLabel?: SparqlValue<string>;
-    offCategory?: SparqlValue<string>;
-    imageUrl?: SparqlValue<string>;
+    cocktail: SparqlValue;
+    cocktailLabel: SparqlValue;
+    alcoholPercentagePoints?: SparqlValue;
+    ingredientLabel?: SparqlValue;
+    ingredientAmount?: SparqlValue;
+    ingredientUnitLabel?: SparqlValue;
+    offCategory?: SparqlValue;
+    imageUrl?: SparqlValue;
 };
 
 async function fetchDrinkData(): Promise<WikidataCocktail[]> {
@@ -202,7 +203,7 @@ function toDrinksAndIngredients(cocktails: WikidataCocktail[]): { drinks: IDrink
 
     for (let {
         cocktail, cocktailLabel, imageUrl,
-        alcohol, ingredientAmount, ingredientLabel, ingredientUnitLabel, offCategory
+        alcoholPercentagePoints, ingredientAmount, ingredientLabel, ingredientUnitLabel, offCategory
     } of cocktails) {
         function discardResult(reason: string) {
             console.error(`Warning: Discard ingredient "${ingredientLabel?.value}" `
@@ -226,18 +227,37 @@ function toDrinksAndIngredients(cocktails: WikidataCocktail[]): { drinks: IDrink
             continue;
         }
 
-        const amount = normalize(ingredientAmount.value, ingredientUnitLabel.value);
-        if (amount === null) {
-            discardResult("Couldn't normalize amount");
+        const numericIngredientAmount = Number.parseFloat(ingredientAmount.value);
+        if (Number.isNaN(numericIngredientAmount)) {
+            discardResult("Non-numeric ingredient amount");
+        }
+
+        const numericAlcoholPercentagePoints = alcoholPercentagePoints !== undefined 
+            ? Number.parseFloat(alcoholPercentagePoints.value)
+            : 0;
+        if (Number.isNaN(numericAlcoholPercentagePoints)) {
+            discardResult("Non-numeric alcohol concentration");
+        }
+
+        const ingredientUnit = ingredientUnitLabel.value;
+        if (!isUnit(ingredientUnit)) {
+            discardResult("Unknown unit");
             continue;
         }
-        if (amount.val <= 0) {
-            discardResult("Negative or zeroed out amount");
+
+        if (numericIngredientAmount < 0) {
+            discardResult("Illegal negative amount");
             continue;
         }
+        if (numericIngredientAmount === 0 && isVolumetricUnit(ingredientUnit)) {
+            discardResult("Illegal zero amount (volumetric unit)");
+            continue;
+        }
+        let { amount: trivialAmount, unit: trivialUnit } = isTrivialUnit(ingredientUnit)
+            ? { amount: numericIngredientAmount, unit: ingredientUnit }
+            : { amount: normalize(numericIngredientAmount, ingredientUnit), unit: 'ml' } as const;
 
         let drink = drinks.get(cocktail.value);
-
         if (!drink) {
             drink = {
                 name: cocktailLabel.value,
@@ -249,23 +269,24 @@ function toDrinksAndIngredients(cocktails: WikidataCocktail[]): { drinks: IDrink
         }
 
         let ingredient = ingredients.get(ingredientLabel.value);
-
         if (!ingredient) {
             ingredient = {
                 name: ingredientLabel.value,
                 category: offCategory?.value,
-                alcoholConcentration: alcohol ? alcohol.value / 100 : 0
+                alcoholConcentration: numericAlcoholPercentagePoints / 100
             };
             ingredients.set(ingredientLabel.value, ingredient);
         }
 
-        // Add IngredientAmount
-        drink.ingredients.push({
-            ingredient,
-            amount: amount.val,
-            unit: amount.unit
-        });
-
+        // If an ingredient has multiple categories, it will appear in multiple rows.  We must therefore
+        // ensure that the ingredient isn't present yet.
+        if (drink.ingredients.find(it => it.ingredient.name === ingredient!.name) === undefined) {
+            drink.ingredients.push({
+                ingredient: ingredient,
+                amount: trivialAmount,
+                unit: trivialUnit
+            });
+        }
     }
 
     console.log(`Wikidata: Fetched ${drinks.size} drinks with ${ingredients.size} unique ingredients`);
@@ -279,8 +300,8 @@ function toDrinksAndIngredients(cocktails: WikidataCocktail[]): { drinks: IDrink
 }
 
 async function enrichAlcohol(ingredient: IIngredient) {
-    if(ingredient.alcoholConcentration) return;
-    if(!ingredient.category) return;
+    if (ingredient.alcoholConcentration) return;
+    if (!ingredient.category) return;
 
     ingredient.alcoholConcentration = await getAlcohol(ingredient.category);
 
@@ -289,7 +310,12 @@ async function enrichAlcohol(ingredient: IIngredient) {
 
 function accumulateTotal(drink: IDrink) {
     drink.alcoholVolume = drink.ingredients.reduce(
-        (sum, { amount, ingredient: { alcoholConcentration: alcohol }}) => sum + amount * alcohol / 100, 
+        (sum, { amount, unit, ingredient: { alcoholConcentration: alcohol } }) => {
+            let normalizedAmount = unit === 'ml'
+                ? amount
+                : normalize(amount, unit);
+            return sum + normalizedAmount * alcohol / 100;
+        }, 
         0
     );
 
