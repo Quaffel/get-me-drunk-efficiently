@@ -35,8 +35,6 @@ export async function searchDrinks({
         }   
     }
 
-    console.log("after alc concentration: " + drinks.find(it => it.name === "Ramos Gin Fizz"));
-
     return drinks;
 }
 
