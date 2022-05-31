@@ -41,10 +41,15 @@ export function BrowserResult(): JSX.Element {
     if (contentQuery?.state !== 'completed') {
         return <BrowserStatusMessage>Loading</BrowserStatusMessage>;
     }
+    if (contentQuery.results.length === 0) {
+        return <BrowserStatusMessage>No results</BrowserStatusMessage>
+    }
 
     return <div className="browser-result"><DrinkGrid drinks={contentQuery.results} /></div>;
 }
 
 function BrowserStatusMessage({ children }: { children: string }): JSX.Element {
-    return <div className="browser-result browser-message">{children}</div>;
+    return <div className="browser-result-status">
+            <label>No results</label>
+        </div>;
 }

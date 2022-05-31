@@ -9,14 +9,24 @@
     grid-area: result;
 }
 
-.browser-message {
+.browser-filter {
+    grid-area: filter;
+}
+
+.browser-result-status {
+    grid-area: result;
+
+    min-height: 100%;
+    margin-top: 3rem;
+
     display: flex;
     justify-content: center;
     align-items: center;
 }
 
-.browser-filter {
-    grid-area: filter;
+.browser-result-status > label {
+    font-size: 1.3rem;
+    font-weight: bold;
 }
 
 @media screen and (min-width: 1200px) {
