@@ -1,9 +1,9 @@
 import * as React from 'react';
 import './searchform.css';
 
-import { IngredientList, loadAllIngredients } from './IngredientList';
-import { IIngredient } from "../../../types";
-import { useTipsySelector } from '../tipsiness/tipsyselector/tipsyselector';
+import { IngredientList, loadAllIngredients } from '../../searchform/IngredientList';
+import { IIngredient } from "../../../../types";
+import { useTipsySelector } from '../tipsyselector/tipsyselector';
 
 const INGREDIENT_STORE = "get-me-drunk-fridge";
 
@@ -37,14 +37,11 @@ function SearchForm({
     }, [ingredients]);
     
     return (
-        <>
-            <div className="segment">
-                {ingredients !== null && <>
-                    <label htmlFor="ingredientInput" className="searchform-label">What's inside your fridge?</label>
-                    <IngredientList ingredients={ingredients} setIngredients={setIngredients} />
-                </>}
+        <div className="searchform">
+            <div className="searchform-segment searchform-segment-selector">
+                {tipsySelectorEl}
             </div>
-            <div className="segment">
+            <div className="searchform-segment searchform-segment-weight">
                 <label htmlFor="weightInput" className="searchform-label">How much do you weight?</label>
                 <div className="searchform-input-container">
                     <input type="number" id="weightInput" value={weight}
@@ -52,12 +49,14 @@ function SearchForm({
                     <span className="suffix">kg</span>
                 </div>
             </div>
-            <div className="segment">
-                {tipsySelectorEl}
+            <div className="searchform-segment searchform-segment-fridge">
+                {ingredients !== null && <>
+                    <label htmlFor="ingredientInput" className="searchform-label">What's inside your fridge?</label>
+                    <IngredientList ingredients={ingredients} setIngredients={setIngredients} />
+                </>}
             </div>
             <button className="searchform-submit" onClick={() => { if(ingredients !== null) submit({ weight, ingredients, promille })}}>Drinks &rarr;</button>
-
-        </>
+        </div>
     );
 }
 

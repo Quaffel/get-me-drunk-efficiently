@@ -3,7 +3,7 @@ import { DrinkList } from '../drinks/DrinkList';
 import { IDrinkAmount, IIngredient } from "../../../types";
 import { Banner } from '../basic/Banner';
 import { Spinner } from '../basic/Spinner';
-import SearchForm from '../searchform/searchform';
+import SearchForm from './searchform/searchform';
 import *  as API from "../api";
 
 function App() {

@@ -37,7 +37,6 @@
 .ingredient-input {
     all: unset;
     background-color: var(--primary-opacity);
-    width: 90%;
     flex-grow: 1;
     font-size: 20px;
     padding: 5px 10px 5px 10px;

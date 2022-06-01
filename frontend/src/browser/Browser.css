@@ -3,32 +3,42 @@
 
     padding-inline: 2rem;
     box-sizing: border-box;
-
-    display: grid;
-    grid-template-columns: 20vw 1fr;
-    grid-template-rows: 1fr;
-    grid-template-areas:    "filter result";
-
-    column-gap: 2rem;
-
-    justify-content: center;
-    align-content: center;
 }
 
 .browser-result {
     grid-area: result;
 }
 
-.browser-message {
+.browser-filter {
+    grid-area: filter;
+}
+
+.browser-result-status {
+    grid-area: result;
+
+    min-height: 100%;
+    margin-top: 3rem;
+
     display: flex;
     justify-content: center;
     align-items: center;
 }
 
-.browser-filter {
-    grid-area: filter;
+.browser-result-status > label {
+    font-size: 1.3rem;
+    font-weight: bold;
 }
 
-.browser-filter-element {
-    margin-bottom: 2rem;
+@media screen and (min-width: 1200px) {
+    .browser {
+        display: grid;
+        grid-template-columns: 20vw 1fr;
+        grid-template-rows: 1fr;
+        grid-template-areas:    "filter result";
+
+        column-gap: 2rem;
+
+        justify-content: center;
+        align-content: center;
+    }
 }
