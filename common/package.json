@@ -1,0 +1,16 @@
+{
+    "name": "@get-me-drunk/common",
+    "version": "1.0.0",
+    "main": "lib/index.js",
+    "types": "lib/index.d.ts",
+    "type": "module",
+    "dependencies": {
+        "typescript": "^4.7.4"
+    },
+    "scripts": {
+        "build": "tsc"
+    },
+    "files": ["lib"],
+    "author": "",
+    "license": "ISC"
+}
