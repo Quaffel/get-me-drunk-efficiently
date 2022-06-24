@@ -1,6 +1,6 @@
 import express, { Application } from 'express';
-import { router as apiRouter } from './api/api';
-import { getDrinks } from './data';
+import { router as apiRouter } from './api/api.js';
+import { getDrinks } from './data/index.js';
 
 (async function init() {
     const app: Application = express();

@@ -1,10 +1,10 @@
-import { fetch } from './fetch';
+import { fetch } from './fetch.js';
 
-import { IDrink, IIngredient } from "../../types";
-import { getAlcohol } from './openfoodfacts';
-import { isTrivialUnit, isUnit, isVolumetricUnit } from '../../types';
-import { fetchScalingImageInfo } from './wikimedia-imageinfo';
-import { normalize, once } from './util';
+import { IDrink, IIngredient } from '../../types.js';
+import { getAlcohol } from './openfoodfacts.js';
+import { isTrivialUnit, isUnit, isVolumetricUnit } from '../../types.js';
+import { fetchScalingImageInfo } from './wikimedia-imageinfo.js';
+import { normalize, once } from './util.js';
 
 const SERVICE_URL = 'https://query.wikidata.org/sparql';
 

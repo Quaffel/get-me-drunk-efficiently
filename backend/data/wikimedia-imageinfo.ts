@@ -1,9 +1,9 @@
 // Documentation for the Wikimedia Imageinfo API is available under
 // https://www.mediawiki.org/wiki/API:Imageinfo
 
-import { IDrink } from "../../types";
-import { fetch } from "./fetch";
-import { DeepPartial, discerpInBatches, isDeepNonNullable, NonEmptyArray } from "./util";
+import { IDrink } from "../../types.js";
+import { fetch } from "./fetch.js";
+import { DeepPartial, discerpInBatches, isDeepNonNullable, NonEmptyArray } from "./util.js";
 
 export interface ImageMetadata {
     width: number;

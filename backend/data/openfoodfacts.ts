@@ -1,5 +1,5 @@
-import { cached } from "./util";
-import { fetch } from './fetch';
+import { cached } from "./util.js";
+import { fetch } from './fetch.js';
 
 export const getAlcohol = cached(async function fetchAlcohol(category: string): Promise<number> {
     const url = `https://world.openfoodfacts.org/category/${encodeURIComponent(category)}.json?page_size=50`;

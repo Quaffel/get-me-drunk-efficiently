@@ -1,4 +1,4 @@
-import { isVolumetricUnit, Unit } from "../../types";
+import { isVolumetricUnit, Unit } from "../../types.js";
 
 
 export function normalize(ingredientAmount: number, unit: Unit): number {
