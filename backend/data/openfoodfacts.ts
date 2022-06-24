@@ -1,4 +1,3 @@
-import { cached } from "./util.js";
 import { fetch } from './fetch.js';
 import { persistedWithDomainArg } from "./persist.js";
 
