@@ -1,0 +1,13 @@
+{
+    "compilerOptions": {
+        "outDir": "dist",
+        "strict": true,
+        "lib": ["ES2022"],
+        "module": "ES2022",
+        "moduleResolution": "NodeNext",
+        "sourceMap": true
+    },
+    "exclude": [
+        "node_modules"
+    ]
+}

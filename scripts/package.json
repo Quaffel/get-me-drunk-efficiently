@@ -1,0 +1,20 @@
+{
+    "name": "@get-me-drunk/scripts",
+    "version": "1.0.0",
+    "description": "",
+    "type": "module",
+    "main": "src/index.ts",
+    "dependencies": {
+        "@get-me-drunk/common": "*",
+        "@types/node": "18.0.0",
+        "typescript": "^4.2.3"
+    },
+    "scripts": {
+        "test-common": "npm run build && node ./dist/script-run-test.js common",
+        "test-backend": "npm run build && node ./dist/script-run-test.js backend",
+        "test-frontend": "npm run build && node ./dist/script-run-test.js frontend",
+        "build": "tsc"
+    },
+    "author": "",
+    "license": "ISC"
+}
