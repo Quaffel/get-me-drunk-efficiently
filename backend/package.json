@@ -13,7 +13,7 @@
   "scripts": {
     "start": "npm run build && npm run development",
     "build": "tsc",
-    "development": "node ./dist/backend/index.js"
+    "development": "node ./dist/index.js"
   },
   "author": "",
   "license": "ISC"
