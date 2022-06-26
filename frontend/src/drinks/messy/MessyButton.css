@@ -1,0 +1,9 @@
+.messy-button {
+    border-style: none;
+    border-radius: 10px;
+    font-family: var(--text-font);
+    font-weight: bold;
+    padding: 10px 0px;
+    margin-top: 1.5em;
+    background-color: #b9cff7;
+}

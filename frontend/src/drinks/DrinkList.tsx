@@ -1,9 +1,8 @@
-import * as React from "react";
-import { IDrinkAmount } from "../../../types";
-import { Card } from "../basic/Card";
-import { DrinkCard } from "./DrinkCard";
+import { types } from '@get-me-drunk/common';
+import { Card } from '../basic/Card';
+import { DrinkCard } from './DrinkCard';
 
-export function DrinkList({ drinkAmounts, goBack }: { drinkAmounts: IDrinkAmount[], goBack():void }) {
+export function DrinkList({ drinkAmounts, goBack }: { drinkAmounts: types.IDrinkAmount[], goBack(): void }) {
     return <div>
         {drinkAmounts.map(({ drink, amount }) => <div>
             <Card.Container>

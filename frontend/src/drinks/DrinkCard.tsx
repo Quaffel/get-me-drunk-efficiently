@@ -1,11 +1,11 @@
-import * as React from "react";
-import  { IDrink } from "../../../types";
-import { Card } from "../basic/Card";
+import * as React from 'react';
+import  { types } from '@get-me-drunk/common';
+import { Card } from '../basic/Card';
 
 const FALLBACK_DRINK_THUMBNAIL = 
     "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e7/Flaming_cocktails.jpg/300px-Flaming_cocktails.jpg";
 
-export function DrinkCard({ drink }: { drink: IDrink }) {
+export function DrinkCard({ drink }: { drink: types.IDrink }) {
     return <Card>
         <Card.Image src={drink.image ?? FALLBACK_DRINK_THUMBNAIL} />
         <Card.Title name={drink.name} />
@@ -16,11 +16,6 @@ export function DrinkCard({ drink }: { drink: IDrink }) {
                 </React.Fragment>    
             )}
         </Card.Content>
-        {!!drink.instructions?.length && <Card.Content title="Instructions">
-            {drink.instructions?.map((instruction, index) => 
-                <>{index + 1}. {instruction}<br/></>
-            )}
-        </Card.Content>}
         
     </Card>
 }

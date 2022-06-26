@@ -1,8 +1,7 @@
 import { fetch } from './fetch.js';
 
-import { IDrink, IIngredient } from '../../types.js';
+import { types } from '@get-me-drunk/common';
 import { getAlcohol } from './openfoodfacts.js';
-import { isTrivialUnit, isUnit, isVolumetricUnit } from '../../types.js';
 import { fetchScalingImageInfo } from './wikimedia-imageinfo.js';
 import { normalize, once } from './util.js';
 import { persisted } from './persist.js';
@@ -194,10 +193,12 @@ async function fetchDrinkData(): Promise<WikidataCocktail[]> {
     return parsedResponse.results.bindings;
 }
 
-function toDrinksAndIngredients(cocktails: WikidataCocktail[]): { drinks: IDrink[], ingredients: IIngredient[] } {
+function toDrinksAndIngredients(
+    cocktails: WikidataCocktail[]
+): { drinks: types.IDrink[], ingredients: types.IIngredient[] } {
     // As fetching drinks with ingredients increases cardinality, we need to regroup the results by drink
-    const drinks = new Map<string, IDrink>();
-    const ingredients = new Map<string, IIngredient>();
+    const drinks = new Map<string, types.IDrink>();
+    const ingredients = new Map<string, types.IIngredient>();
 
     let discardedEntries = 0;
     let discardedDrinks = new Set<string>();
@@ -241,7 +242,7 @@ function toDrinksAndIngredients(cocktails: WikidataCocktail[]): { drinks: IDrink
         }
 
         const ingredientUnit = ingredientUnitLabel.value;
-        if (!isUnit(ingredientUnit)) {
+        if (!types.isUnit(ingredientUnit)) {
             discardResult("Unknown unit");
             continue;
         }
@@ -250,11 +251,11 @@ function toDrinksAndIngredients(cocktails: WikidataCocktail[]): { drinks: IDrink
             discardResult("Illegal negative amount");
             continue;
         }
-        if (numericIngredientAmount === 0 && isVolumetricUnit(ingredientUnit)) {
+        if (numericIngredientAmount === 0 && types.isVolumetricUnit(ingredientUnit)) {
             discardResult("Illegal zero amount (volumetric unit)");
             continue;
         }
-        let { amount: trivialAmount, unit: trivialUnit } = isTrivialUnit(ingredientUnit)
+        let { amount: trivialAmount, unit: trivialUnit } = types.isTrivialUnit(ingredientUnit)
             ? { amount: numericIngredientAmount, unit: ingredientUnit }
             : { amount: normalize(numericIngredientAmount, ingredientUnit), unit: 'ml' } as const;
 
@@ -300,7 +301,7 @@ function toDrinksAndIngredients(cocktails: WikidataCocktail[]): { drinks: IDrink
     };
 }
 
-async function enrichAlcohol(ingredient: IIngredient) {
+async function enrichAlcohol(ingredient: types.IIngredient) {
     if (ingredient.alcoholConcentration) return;
     if (!ingredient.category) return;
 
@@ -309,7 +310,7 @@ async function enrichAlcohol(ingredient: IIngredient) {
     console.log(`Wikidata enriched alcohol of ${ingredient.name} (category: ${ingredient.category}) to ${ingredient.alcoholConcentration}`);
 }
 
-function accumulateTotal(drink: IDrink) {
+function accumulateTotal(drink: types.IDrink) {
     drink.alcoholVolume = drink.ingredients.reduce(
         (sum, { amount, unit, ingredient: { alcoholConcentration: alcohol } }) => {
             let normalizedAmount = unit === 'ml'

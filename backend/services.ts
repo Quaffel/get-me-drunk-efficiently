@@ -1,9 +1,9 @@
-import { IDrink, IDrinkAmount, IIngredient } from '../types.js';
+import { types } from '@get-me-drunk/common';
 import { getDrinks, getIngredients } from './data/index.js';
 
 const ALCOHOL_GRAM_TO_ML = 16 / 10;
 
-export async function getAllIngredients(): Promise<IIngredient[]> {
+export async function getAllIngredients(): Promise<types.IIngredient[]> {
     return getIngredients();
 }
 
@@ -14,8 +14,8 @@ export async function searchDrinks({
 }: {
     drinkName?: string,
     maxAlcoholConcentration?: number,
-    ingredients?: Array<IIngredient["name"]>
-}): Promise<IDrink[]> {
+    ingredients?: Array<types.IIngredient["name"]>
+}): Promise<types.IDrink[]> {
     let drinks = await getDrinks();
 
     if (drinkName) {
@@ -23,7 +23,7 @@ export async function searchDrinks({
     }
 
     if (ingredients) {
-        const permissibleIngredients = new Set<IIngredient["name"]>(ingredients);
+        const permissibleIngredients = new Set<types.IIngredient["name"]>(ingredients);
         drinks = drinks.filter(it => {
             return it.ingredients.find(ingr => !permissibleIngredients.has(ingr.ingredient.name)) === undefined;
         });
@@ -39,14 +39,14 @@ export async function searchDrinks({
 }
 
 export async function getOptimalDrinkAmounts(
-    availableIngredients: Array<IIngredient["name"]>,
+    availableIngredients: Array<types.IIngredient["name"]>,
     promille: number,
     weight: number
-): Promise<IDrinkAmount[]> {
+): Promise<types.IDrinkAmount[]> {
     const allDrinks = await getDrinks();
 
     // Filter drinks with missing ingredients
-    let availableDrinks: IDrink[] = [];
+    let availableDrinks: types.IDrink[] = [];
 
     if (availableIngredients.length) {
         availableDrinks = allDrinks.filter(drink =>
@@ -67,13 +67,13 @@ export async function getOptimalDrinkAmounts(
 
 
     // a drink might be yielded multiple times, group them as DrinkAmounts
-    const drinkAmount = new Map<IDrink, number>();
+    const drinkAmount = new Map<types.IDrink, number>();
 
     for (const drink of getDrinksByMostAlc(targetAlcoholMl, availableDrinks)) {
         drinkAmount.set(drink, (drinkAmount.get(drink) ?? 0) + 1);
     }
 
-    const optimal: IDrinkAmount[] = [...drinkAmount.entries()].map(([drink, amount]) => ({ drink, amount }));
+    const optimal: types.IDrinkAmount[] = [...drinkAmount.entries()].map(([drink, amount]) => ({ drink, amount }));
 
     const resultingAlcoholVolume = optimal
         .reduce((sum, { drink, amount }) => sum + amount * drink.alcoholVolume, 0);
@@ -95,8 +95,8 @@ function calculateTargetAlcohol(targetPromille: number, weightKg: number): numbe
 }
 
 function areIngredientsAvailable(
-    checkIngredients: IIngredient[],
-    availableIngredients: Array<IIngredient["name"]>
+    checkIngredients: types.IIngredient[],
+    availableIngredients: Array<types.IIngredient["name"]>
 ): boolean {
     return checkIngredients.find(it => !availableIngredients.includes(it.name)) === undefined;
 }
@@ -109,7 +109,7 @@ const SKIP_PROPABILITY = 0.9;
 
 
 /* Yields a random combination of Drinks till the targetAlcVolume is closely reached */
-function* getDrinksByMostAlc(targetAlcVolume: number, drinks: IDrink[]): Generator<IDrink> {
+function* getDrinksByMostAlc(targetAlcVolume: number, drinks: types.IDrink[]): Generator<types.IDrink> {
     let sumAlcoholVolume = 0;
     // First pass: get some random drinks
     first_pass: for (const drink of drinks) {

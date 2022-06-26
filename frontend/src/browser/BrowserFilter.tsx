@@ -1,5 +1,5 @@
 import React from 'react';
-import { IIngredient } from '../../../types';
+import { types } from '@get-me-drunk/common';
 import { IngredientList } from '../searchform/IngredientList';
 import { BrowserSearch } from './BrowserSearch';
 
@@ -13,8 +13,8 @@ export function BrowserFilterPane({
 }: {
     maxAlcoholConcentration: number,
     onMaxAlcoholConcentrationUpdate: (value: number) => void,
-    ingredients: Array<IIngredient>,
-    onIngredientsUpdate: (value: Array<IIngredient>) => void
+    ingredients: Array<types.IIngredient>,
+    onIngredientsUpdate: (value: Array<types.IIngredient>) => void
 }): JSX.Element {
     return <details className="browser-filter" open={true}>
         <summary>Filter options</summary>

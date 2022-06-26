@@ -1,8 +1,8 @@
 // Documentation for the Wikimedia Imageinfo API is available under
 // https://www.mediawiki.org/wiki/API:Imageinfo
 
-import { IDrink } from "../../types.js";
-import { fetch } from "./fetch.js";
+import { types } from '@get-me-drunk/common';
+import { fetch } from './fetch.js';
 import { DeepPartial, discerpInBatches, isDeepNonNullable, NonEmptyArray } from "./util.js";
 
 export interface ImageMetadata {
@@ -48,7 +48,7 @@ interface WikimediaImageInfo {
     descriptionurl: string;
 }
 
-export async function fetchScalingImageInfo<D extends Array<IDrink>>(
+export async function fetchScalingImageInfo<D extends Array<types.IDrink>>(
     drinks: D,
     maxDimensions: {
         width: number,
@@ -71,7 +71,7 @@ export async function fetchScalingImageInfo<D extends Array<IDrink>>(
     return infoMappings.reduce((acc, mapping) => Object.assign(acc, mapping), {} as any);
 }
 
-async function fetchScalingImageInfo0<D extends NonEmptyArray<IDrink>>(
+async function fetchScalingImageInfo0<D extends NonEmptyArray<types.IDrink>>(
     drinks: D,
     maxDimensions: {
         width: number,

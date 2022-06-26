@@ -1,4 +1,4 @@
-import { IIngredient, IDrinkAmount, IDrink } from './types';
+import { IIngredient, IDrinkAmount, IDrink } from './types.js';
 
 // Tipsiness query: 
 // Querying a set of cocktails that needs to be consumed for reaching a certain 

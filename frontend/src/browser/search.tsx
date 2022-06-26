@@ -1,5 +1,5 @@
 import React from 'react';
-import { IDrink, IIngredient } from '../../../types';
+import { types } from '@get-me-drunk/common';
 import { queryDrinks } from '../api';
 import { arrayEquals } from '../util/array';
 
@@ -8,7 +8,7 @@ import './Browser.css';
 interface QueryData {
     drinkName?: string,
     maxAlcoholConcentration?: number,
-    ingredients?: Array<IIngredient>,
+    ingredients?: Array<types.IIngredient>,
 }
 
 interface QueryBase<T extends string> {
@@ -25,7 +25,7 @@ interface FailedQuery extends QueryBase<'loading'> {
     lastCompletedQuery: CompletedQuery;
 }
 interface CompletedQuery extends QueryBase<'completed'> {
-    results: Array<IDrink>
+    results: Array<types.IDrink>
 }
 
 export type Query = PendingQuery | LoadingQuery | FailedQuery | CompletedQuery;

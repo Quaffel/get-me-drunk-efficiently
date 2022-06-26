@@ -1,8 +1,8 @@
-import { isVolumetricUnit, Unit } from "../../types.js";
+import { types } from '@get-me-drunk/common';
 
 
-export function normalize(ingredientAmount: number, unit: Unit): number {
-    if (!isVolumetricUnit(unit)) {
+export function normalize(ingredientAmount: number, unit: types.Unit): number {
+    if (!types.isVolumetricUnit(unit)) {
         return 0;
     }
 
