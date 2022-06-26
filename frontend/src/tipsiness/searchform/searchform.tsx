@@ -1,8 +1,8 @@
 import * as React from 'react';
 import './searchform.css';
 
+import { types } from '@get-me-drunk/common';
 import { IngredientList, loadAllIngredients } from '../../searchform/IngredientList';
-import { IIngredient } from "../../../../types";
 import { useTipsySelector } from '../tipsyselector/tipsyselector';
 
 const INGREDIENT_STORE = "get-me-drunk-fridge";
@@ -10,10 +10,10 @@ const INGREDIENT_STORE = "get-me-drunk-fridge";
 function SearchForm({
     submit
 }: {
-    submit(query: { weight: number, ingredients: IIngredient[], promille: number }): void
+    submit(query: { weight: number, ingredients: types.IIngredient[], promille: number }): void
 }) {
     const [weight, setWeight] = React.useState(70);
-    const [ingredients, setIngredients] = React.useState<IIngredient[] | null>(null);
+    const [ingredients, setIngredients] = React.useState<types.IIngredient[] | null>(null);
     const [tipsySelectorEl, promille] = useTipsySelector({ rangeOptions: { min: .3, max: 2 } });
 
     // If the ingredients were loaded before the user started adding some, 
