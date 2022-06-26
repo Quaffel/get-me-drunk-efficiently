@@ -43,7 +43,7 @@ export async function discoverTestScripts(root: string): Promise<Array<string> |
             .filter(it => it !== null && it.length > 0) as Array<Array<string>>)
             .flat(1);
     } catch (e: any) {
-        let cause: { errno: number, code: string } = e;
+        const cause: { errno: number, code: string } = e;
 
         // The only expected error occurs when the requested file does not exist.  In the absence of concurrent
         // modifications of the file system, this can only happen for the root directory.

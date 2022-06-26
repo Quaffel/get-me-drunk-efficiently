@@ -5,6 +5,7 @@ import { getAlcohol } from './openfoodfacts.js';
 import { isTrivialUnit, isUnit, isVolumetricUnit } from '../../types.js';
 import { fetchScalingImageInfo } from './wikimedia-imageinfo.js';
 import { normalize, once } from './util.js';
+import { persisted } from './persist.js';
 
 const SERVICE_URL = 'https://query.wikidata.org/sparql';
 
@@ -353,7 +354,7 @@ function normalizeWikimediaUrl(drinkUrl: string): string | null {
         : null;
 }
 
-const getDrinksAndIngredients = once(async () => {
+const getDrinksAndIngredients = persisted("wikidata-drinks", async () => {
     const result = await fetchDrinkData();
     const { drinks, ingredients } = toDrinksAndIngredients(result);
 
