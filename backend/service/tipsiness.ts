@@ -1,42 +1,7 @@
 import { types } from '@get-me-drunk/common';
-import { getDrinks, getIngredients } from './data/index.js';
+import { getDrinks } from '../data/index.js';
 
 const ALCOHOL_GRAM_TO_ML = 16 / 10;
-
-export async function getAllIngredients(): Promise<types.IIngredient[]> {
-    return getIngredients();
-}
-
-export async function searchDrinks({
-    drinkName,
-    maxAlcoholConcentration,
-    ingredients
-}: {
-    drinkName?: string,
-    maxAlcoholConcentration?: number,
-    ingredients?: Array<types.IIngredient["name"]>
-}): Promise<types.IDrink[]> {
-    let drinks = await getDrinks();
-
-    if (drinkName) {
-        drinks = drinks.filter(it => it.name.toLowerCase().includes(drinkName.toLowerCase()));
-    }
-
-    if (ingredients) {
-        const permissibleIngredients = new Set<types.IIngredient["name"]>(ingredients);
-        drinks = drinks.filter(it => {
-            return it.ingredients.find(ingr => !permissibleIngredients.has(ingr.ingredient.name)) === undefined;
-        });
-    }
-
-    if (maxAlcoholConcentration !== undefined) {
-        if (maxAlcoholConcentration < 0 || maxAlcoholConcentration > 1) {
-            throw new Error("Alcohol concentration is out of bounds");
-        }   
-    }
-
-    return drinks;
-}
 
 export async function getOptimalDrinkAmounts(
     availableIngredients: Array<types.IIngredient["name"]>,
@@ -136,5 +101,4 @@ function* getDrinksByMostAlc(targetAlcVolume: number, drinks: types.IDrink[]): G
     const smallest = drinks[drinks.length - 1];
     if (smallest && Math.abs(targetAlcVolume - sumAlcoholVolume - smallest.alcoholVolume) < targetAlcVolume - sumAlcoholVolume)
         yield smallest;
-
 }

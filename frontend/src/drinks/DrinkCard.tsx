@@ -18,18 +18,7 @@ export function DrinkCard({ drink }: { drink: types.IDrink }) {
             )}
         </Card.Content>
         <Card.Container>
-            <MessyButton recipe={{
-                name: { en: "Weird cocktail", de: "Komischer Cocktail" },
-                tasks: [{
-                    type: 'fill',
-                    amount: 3,
-                    ingredient: { en: "Vodka", de: "Vodka" },
-                    amountInUnit: {
-                        amount: 4,
-                        unit: 'kg'
-                    }
-                }]
-            }}/>
+            <MessyButton drink={drink}/>
         </Card.Container> 
     </Card>
 }

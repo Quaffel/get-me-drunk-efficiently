@@ -1,23 +1,33 @@
-import { messy } from '@get-me-drunk/common';
-import { useState } from "react";
+import React from 'react';
+import { messy, types } from '@get-me-drunk/common';
+import { queryRecipe } from '../../api';
 import "./MessyButton.css";
 
 const messySession = messy.startMessy();
 
-export function MessyButton({ recipe }: { recipe: messy.types.Recipe }) {
-    const [state, setState] = useState<"pending" | "loading" | "done" | "abort">("pending");
+export function MessyButton({ drink }: { drink: types.IDrink }) {
+    const [state, setState] = React.useState<"pending" | "loading" | "done" | "abort">("pending");
+    const recipeRef = React.useRef<Promise<messy.types.Recipe>>();
 
     async function run() {
+        if (state === 'loading') {
+            return;
+        }
         setState("loading");
+
+        if (recipeRef.current === undefined) {
+            recipeRef.current = queryRecipe({ drink: drink.name }).then(it => it.recipe);
+        }
+
         await messySession.onReady;
         const result = await messySession.run({
-            recipe
+            recipe: await recipeRef.current
         });
         setState(result.state);
     }
 
     return <button className="messy-button" onClick={run}>
-        {state === "pending" && "Mit Messy backen"}
+        {state === "pending" && "Mix with Messy"}
         {state === "loading" && "lädt"}
         {state === "done" && "Mit Messy backen"}
         {state === "abort" && "Huch?"}

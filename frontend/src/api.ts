@@ -20,3 +20,12 @@ export const queryDrinks = (request: queries.IDrinkQuery): Promise<queries.IDrin
         },
         body: JSON.stringify(request)
     }).then(it => it.json());
+
+export const queryRecipe = (request: queries.IRecipeQuery): Promise<queries.IRecipeResponse> =>
+    fetch("/api/recipe", {
+        method: "POST",
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(request)
+    }).then(it => it.json());

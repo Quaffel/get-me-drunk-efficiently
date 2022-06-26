@@ -1,7 +1,7 @@
+import { messy } from './index.js';
 import { IIngredient, IDrinkAmount, IDrink } from './types.js';
 
-// Tipsiness query: 
-// Querying a set of cocktails that needs to be consumed for reaching a certain 
+// Tipsiness query: Query a set of cocktails that needs to be consumed for reaching a certain 
 // level of drunkenness.  Used by "get-me-drunk-efficiently"'s core feature.
 export interface ITipsinessQuery {
     ingredients: Array<IIngredient["name"]>;
@@ -19,9 +19,8 @@ export function isTipsinessQuery(obj: any): obj is ITipsinessQuery {
         && obj.weight && typeof obj.weight === 'number';
 }
 
-// All ingredients query:
-// Querying all ingredients that are used in at least one cocktail.  
-// Used by the fridge functionality on the tipsiness query page.
+// All ingredients query: Query all ingredients that are used in at least one cocktail. 
+// Required for on-device suggestions in the IngredientList component.
 export interface IAllIngredientsQuery {}
 
 export interface IAllIngredientsResponse {
@@ -32,8 +31,7 @@ export function isAllIngredientsQuery(obj: any): obj is IAllIngredientsQuery {
     return !!obj;
 }
 
-// Cocktails request:
-// Querying cocktails based on filter criteria.
+// Drink request: Query drinks based on filter criteria.
 export interface IDrinkQuery {
     drinkName?: string;
     maxAlcoholConcentration?: number;
@@ -46,4 +44,17 @@ export interface IDrinkResponse {
 
 export function isDrinkQuery(obj: any): obj is IDrinkQuery {
     return !!obj;
+}
+
+// Recipe request: Query the recipe associated with a drink.
+export interface IRecipeQuery {
+    drink: IDrink['name'];
+}
+
+export interface IRecipeResponse {
+    recipe: messy.types.Recipe;
+}
+
+export function isRecipeQuery(obj: any): obj is IRecipeQuery {
+    return obj && obj.drink && typeof obj.drink === 'string';
 }
