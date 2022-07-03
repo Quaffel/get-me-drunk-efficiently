@@ -5,6 +5,7 @@
     "types": "lib/index.d.ts",
     "type": "module",
     "dependencies": {
+        "messy-integration": "1.5.0",
         "typescript": "^4.7.4"
     },
     "scripts": {

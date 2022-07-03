@@ -1,8 +1,7 @@
 import React from 'react';
+import { types } from '@get-me-drunk/common';
 import { DrinkGrid } from '../drinks/DrinkGrid';
 import { Query, useSearch } from './search';
-
-import { IIngredient } from '../../../types';
 import { BrowserFilterPane } from './BrowserFilter';
 
 import './Browser.css';
@@ -11,7 +10,7 @@ export function Browser(): JSX.Element {
     const { submitQuery } = useSearch();
 
     const [maxAlcoholConcentration, setMaxAlcoholConcentration] = React.useState<number>(0.2);
-    const [ingredients, setIngredients] = React.useState<Array<IIngredient>>([]);
+    const [ingredients, setIngredients] = React.useState<Array<types.IIngredient>>([]);
 
     React.useEffect(() => {
         submitQuery(prev => ({

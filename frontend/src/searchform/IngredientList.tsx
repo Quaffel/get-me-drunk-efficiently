@@ -1,9 +1,8 @@
-import * as React from "react";
-import "./IngredientList.css";
+import * as React from 'react';
+import './IngredientList.css';
 
-import { IIngredient } from "../../../types";
-
-import * as API from "../api";
+import { types } from '@get-me-drunk/common';
+import * as API from '../api';
 
 export const loadAllIngredients = API.queryIngredients();
 
@@ -11,7 +10,9 @@ export const loadAllIngredients = API.queryIngredients();
 const normalize = (str: string) =>
   str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
 
-async function getRecommendation(search: string, exclude: IIngredient[], cancellationToken: { cancelled: boolean }): Promise<IIngredient | null> {
+async function getRecommendation(
+    search: string, exclude: types.IIngredient[], cancellationToken: { cancelled: boolean }
+): Promise<types.IIngredient | null> {
     const ingredients = (await loadAllIngredients).ingredients;
 
     if(cancellationToken.cancelled)
@@ -33,8 +34,8 @@ async function getRecommendation(search: string, exclude: IIngredient[], cancell
     return best;
 }
 
-function useRecommendation(search: string, exclude: IIngredient[]): IIngredient | null {
-    const [recommendation, setRecommendation] = React.useState<IIngredient | null>(null);
+function useRecommendation(search: string, exclude: types.IIngredient[]): types.IIngredient | null {
+    const [recommendation, setRecommendation] = React.useState<types.IIngredient | null>(null);
 
     React.useEffect(() => {
         const cancellationToken = { cancelled: false };
@@ -49,7 +50,12 @@ function useRecommendation(search: string, exclude: IIngredient[]): IIngredient 
     return recommendation;
 }
 
-export function IngredientList({ ingredients, setIngredients }: { ingredients: IIngredient[], setIngredients(ingredients: IIngredient[]): void, }) {
+export function IngredientList({ 
+    ingredients, setIngredients 
+}: { 
+    ingredients: types.IIngredient[], 
+    setIngredients(ingredients: types.IIngredient[]): void
+}) {
     const [currentIngredient, setCurrentIngredient] = React.useState("");
     const recommendation = useRecommendation(currentIngredient, /* exclude: */ ingredients);
 
@@ -64,13 +70,15 @@ export function IngredientList({ ingredients, setIngredients }: { ingredients: I
         event.preventDefault();
     }
 
-    const handleDelete = (ingredient: IIngredient) => {
+    const handleDelete = (ingredient: types.IIngredient) => {
         setIngredients(ingredients.filter(it => it !== ingredient));
     }
 
     const inputRef = React.useRef<HTMLInputElement | null>(null);
 
-    const ingredientsSorted = React.useMemo(() => [...ingredients].sort((a, b) => a.name.localeCompare(b.name)), [ingredients]);
+    const ingredientsSorted = React.useMemo(
+        () => [...ingredients].sort((a, b) => a.name.localeCompare(b.name)), 
+    [ingredients]);
 
     return (
         <>

@@ -1,15 +1,17 @@
 import React from 'react';
 import { DrinkList } from '../drinks/DrinkList';
-import { IDrinkAmount, IIngredient } from "../../../types";
+import { types } from '@get-me-drunk/common';
 import { Banner } from '../basic/Banner';
 import { Spinner } from '../basic/Spinner';
 import SearchForm from './searchform/searchform';
-import *  as API from "../api";
+import *  as API from '../api';
 
 function App() {
-  const [state, setState] = React.useState<{ pending?: true, loading?: true, result?: IDrinkAmount[], error?: string }>({ pending: true });
+  const [state, setState] = React.useState<{ pending?: true, loading?: true, result?: types.IDrinkAmount[], error?: string }>(
+    { pending: true }
+  );
 
-  async function startRecommendation(query: { ingredients: IIngredient[], weight: number, promille: number }) {
+  async function startRecommendation(query: { ingredients: types.IIngredient[], weight: number, promille: number }) {
     setState({ loading: true });
 
     try {
