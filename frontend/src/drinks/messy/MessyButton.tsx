@@ -27,9 +27,8 @@ export function MessyButton({ drink }: { drink: types.IDrink }) {
     }
 
     return <button className="messy-button" onClick={run}>
-        {state === "pending" && "Mix with Messy"}
+        {(state === "pending" || state === "done") && "Mix with Messy"}
         {state === "loading" && "lädt"}
-        {state === "done" && "Mit Messy backen"}
         {state === "abort" && "Huch?"}
     </button>;
 }

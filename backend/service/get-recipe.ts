@@ -1,12 +1,16 @@
 import { types, messy } from "@get-me-drunk/common";
-import { IIngredientAmount } from "@get-me-drunk/common/lib/types.js";
 import { normalize } from "../data/util.js";
 
+const FILL_MAGIC_UNITS_MAP: Partial<{ [unit in types.Unit]: typeof messy.types.AddIngredientTask.MAGIC_UNITS[number] }>
+    = {
+    '1': 'whole'
+}
+
 export async function getRecipe(drink: types.IDrink): Promise<messy.types.Recipe> {
-    const diminutiveIngredients: Array<IIngredientAmount> = [];
-    const regularAlcoholicIngredients: Array<IIngredientAmount> = [];
-    const regularIngredients: Array<IIngredientAmount> = [];
-    const nonVolumetricIngredients: Array<IIngredientAmount> = [];
+    const diminutiveIngredients: Array<types.IIngredientAmount> = [];
+    const regularAlcoholicIngredients: Array<types.IIngredientAmount> = [];
+    const regularIngredients: Array<types.IIngredientAmount> = [];
+    const nonVolumetricIngredients: Array<types.IIngredientAmount> = [];
 
     for (let ingredient of drink.ingredients) {
         if (!types.isVolumetricUnit(ingredient.unit)) {
@@ -29,32 +33,49 @@ export async function getRecipe(drink: types.IDrink): Promise<messy.types.Recipe
     }
 
     function deriveTask(ingredient: types.IIngredientAmount): messy.types.Task {
+        // TODO: Respect special units such as wholes and ml
         const normalizedAmount: number = normalize(ingredient.amount, ingredient.unit);
-        const displayAmount: { amount: number, unit: { en: string } } = types.isTrivialUnit(ingredient.unit)
-            ? { amount: ingredient.amount, unit: { en: ingredient.unit } }
-            : { amount: normalizedAmount, unit: { en: ingredient.unit } };
+
+        const isTrivial = types.isTrivialUnit(ingredient.unit);
+        const displayAmount = isTrivial ? ingredient.amount : normalizedAmount;
+        const baseUnit = isTrivial 
+            ? (ingredient.unit in FILL_MAGIC_UNITS_MAP ? FILL_MAGIC_UNITS_MAP[ingredient.unit]! : ingredient.unit)
+            : "ml";
 
         if (types.isVolumetricUnit(ingredient.unit)) {
+            const displayUnit: NonNullable<messy.types.FillIngredientTask['amountInUnit']>['unit'] =
+                messy.types.FillIngredientTask.isMagicUnit(baseUnit)
+                    ? baseUnit
+                    : { en: baseUnit };
+
             return {
                 type: 'fill',
                 ingredient: { en: ingredient.ingredient.name },
                 amount: normalizedAmount,
                 amountInUnit: {
-                    amount: normalizedAmount,
-                    unit: "ml"
+                    amount: displayAmount,
+                    unit: displayUnit
                 }
             };
         }
 
+        const displayUnit: NonNullable<messy.types.AddIngredientTask['amountInUnit']>['unit'] =
+                messy.types.AddIngredientTask.isMagicUnit(baseUnit)
+                    ? baseUnit
+                    : { en: baseUnit };
+
         return {
             type: 'add',
             ingredient: { en: ingredient.ingredient.name },
-            amountInUnit: displayAmount
+            amountInUnit: {
+                amount: displayAmount,
+                unit: displayUnit
+            }
         }
     }
 
     return ({
-        name: { en: "Weird cocktail", de: "Komischer Cocktail" },
+        name: { en: drink.name },
         tasks: [
             ...diminutiveIngredients.map(deriveTask), ...regularAlcoholicIngredients.map(deriveTask),
             ...regularIngredients.map(deriveTask), ...nonVolumetricIngredients.map(deriveTask)
