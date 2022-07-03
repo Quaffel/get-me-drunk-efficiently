@@ -1,2 +1,2 @@
-export { getDrinks, getIngredients } from "./wikidata";
-export { getAlcohol } from "./openfoodfacts";
+export { getDrinks, getIngredients } from "./wikidata.js";
+export { getAlcohol } from "./openfoodfacts.js";

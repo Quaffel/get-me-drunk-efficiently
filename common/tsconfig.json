@@ -1,0 +1,18 @@
+{
+    "compilerOptions": {
+        "outDir": "lib",
+        "declaration": true,
+
+        "strict": true,
+        
+        "module": "ES2022",
+        // Include DOM library for access to 'console'.
+        // Symbol is available in both, Node and the standard DOM APIs.
+        "lib": ["ES2022", "DOM"],
+        "moduleResolution": "NodeNext"
+    },
+    "exclude": [
+        "node_modules"
+    ],
+    "include": ["src"]
+}

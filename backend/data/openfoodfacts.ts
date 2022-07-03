@@ -1,7 +1,8 @@
-import { cached } from "./util";
-import { fetch } from './fetch';
+import { cached } from "./util.js";
+import { fetch } from './fetch.js';
+import { persistedWithDomainArg } from "./persist.js";
 
-export const getAlcohol = cached(async function fetchAlcohol(category: string): Promise<number> {
+export const getAlcohol = persistedWithDomainArg(async function fetchAlcohol(category: string): Promise<number> {
     const url = `https://world.openfoodfacts.org/category/${encodeURIComponent(category)}.json?page_size=50`;
 
     const requestTime = Date.now();
@@ -29,7 +30,7 @@ export const getAlcohol = cached(async function fetchAlcohol(category: string): 
 
     console.log(`OpenFoodFacts query for '${category}' (avg. ${roundedAverageAlcohol} %vol) ended after ${returnTime - requestTime}ms`);
     return roundedAverageAlcohol;
-});
+}, (domainName) => `off-ingredient-${domainName}`);
 
 interface FoodFactsResult {
     count: number;

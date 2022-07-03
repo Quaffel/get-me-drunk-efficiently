@@ -1,5 +1,5 @@
-import { IDrink, IDrinkAmount, IIngredient } from '../types';
-import { getDrinks, getIngredients } from './data/';
+import { IDrink, IDrinkAmount, IIngredient } from '../types.js';
+import { getDrinks, getIngredients } from './data/index.js';
 
 const ALCOHOL_GRAM_TO_ML = 16 / 10;
 
@@ -92,10 +92,6 @@ export async function getOptimalDrinkAmounts(
 
 function calculateTargetAlcohol(targetPromille: number, weightKg: number): number {
     return targetPromille * (weightKg * 0.6) * ALCOHOL_GRAM_TO_ML;
-}
-
-function calculateTotalVolume(drink: IDrink): number {
-    return drink.ingredients.reduce((acc, it) => acc + it.amount, 0);
 }
 
 function areIngredientsAvailable(

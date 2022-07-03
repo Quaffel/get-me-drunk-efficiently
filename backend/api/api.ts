@@ -2,8 +2,8 @@ import express, { Router, Request, Response } from 'express';
 import {
     IAllIngredientsResponse, IDrinkResponse, isDrinkQuery,
     isTipsinessQuery, ITipsinessResponse
-} from '../../queries';
-import { getAllIngredients, getOptimalDrinkAmounts, searchDrinks } from '../services';
+} from '../../queries.js';
+import { getAllIngredients, getOptimalDrinkAmounts, searchDrinks } from '../services.js';
 
 const router: Router = Router();
 
